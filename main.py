@@ -1,20 +1,16 @@
 import os
 import re
 import tempfile
-from fastapi import FastAPI, Request, Form, File, UploadFile, HTTPException
+from fastapi import FastAPI, Form, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.templating import Jinja2Templates
 from google import genai
 from google.genai import types
 import edge_tts
 
 app = FastAPI()
 
-templates = Jinja2Templates(directory="templates")
-
-# Lee la clave de acceso configurada en Render (si no está creada, no pedirá clave)
+# Configuración de claves
 ACCESS_CODE = os.getenv("ACCESS_CODE", "")
-
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=gemini_api_key) if gemini_api_key else None
 
@@ -23,9 +19,11 @@ def limpiar_texto_para_voz(texto: str) -> str:
     texto = re.sub(r'[\U00010000-\U0010ffff]', '', texto)
     return texto.strip()
 
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+@app.get("/")
+async def read_root():
+    if os.path.exists("templates/index.html"):
+        return FileResponse("templates/index.html")
+    return HTMLResponse("<h1>Error: No se encontró el archivo index.html en templates/</h1>")
 
 @app.post("/api/chat")
 async def chat(
@@ -34,7 +32,7 @@ async def chat(
     image_file: UploadFile = File(None),
     modelo: str = Form("flash")
 ):
-    # Verificación de clave de acceso
+    # Verificación de clave de acceso si está configurada en Render
     if ACCESS_CODE and clave != ACCESS_CODE:
         raise HTTPException(status_code=401, detail="Clave de acceso incorrecta.")
 
