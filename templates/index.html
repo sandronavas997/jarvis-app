@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J.A.R.V.I.S. // MARK-HUD TRADING COPILOT</title>
-    <!-- Fuentes Futuristas Stark HUD -->
+    <title>J.A.R.V.I.S. // MARK COPILOT</title>
+    <!-- Fuentes HUD Stark -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -17,8 +17,6 @@
             --stark-red: #e63946;
             --crimson-dark: #66000e;
             --cyan-core: #00f3ff;
-            --gold-glow: rgba(255, 183, 3, 0.4);
-            --red-glow: rgba(230, 57, 70, 0.5);
             --font-hud: 'Orbitron', sans-serif;
             --font-body: 'Rajdhani', sans-serif;
             --font-code: 'Share Tech Mono', monospace;
@@ -34,11 +32,10 @@
         body {
             background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(circle at 50% 20%, rgba(230, 57, 70, 0.15) 0%, transparent 65%),
-                radial-gradient(circle at 50% 80%, rgba(255, 183, 3, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 20%, rgba(230, 57, 70, 0.12) 0%, transparent 65%),
                 linear-gradient(rgba(255, 183, 3, 0.02) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 183, 3, 0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            background-size: 100% 100%, 30px 30px, 30px 30px;
             color: #ffe6e8;
             font-family: var(--font-body);
             height: 100vh;
@@ -52,7 +49,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 25px;
+            padding: 10px 20px;
             background: linear-gradient(180deg, rgba(30, 5, 10, 0.95) 0%, rgba(12, 3, 6, 0.9) 100%);
             border-bottom: 2px solid var(--stark-red);
             box-shadow: 0 4px 20px rgba(230, 57, 70, 0.3);
@@ -62,22 +59,22 @@
 
         .brand-title {
             font-family: var(--font-hud);
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: 900;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             color: var(--stark-gold);
-            text-shadow: 0 0 12px var(--stark-gold);
+            text-shadow: 0 0 10px var(--stark-gold);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .status-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             background-color: var(--stark-gold);
             border-radius: 50%;
-            box-shadow: 0 0 10px var(--stark-gold);
+            box-shadow: 0 0 8px var(--stark-gold);
             animation: blink 2s infinite;
         }
 
@@ -88,7 +85,7 @@
 
         .hud-controls {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
         }
 
@@ -97,15 +94,10 @@
             border: 1px solid var(--stark-gold);
             color: var(--stark-gold);
             font-family: var(--font-code);
-            padding: 6px 12px;
+            padding: 5px 10px;
             border-radius: 4px;
             outline: none;
-            transition: 0.3s;
-        }
-
-        .hud-input:focus, .hud-select:focus {
-            border-color: var(--stark-orange);
-            box-shadow: 0 0 12px var(--stark-orange);
+            font-size: 0.85rem;
         }
 
         .btn-stream {
@@ -113,31 +105,29 @@
             border: 1px solid var(--stark-gold);
             color: #ffffff;
             font-family: var(--font-hud);
-            font-size: 0.75rem;
-            padding: 8px 16px;
+            font-size: 0.7rem;
+            padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
             letter-spacing: 1px;
             transition: all 0.3s ease;
-            box-shadow: 0 0 12px rgba(255, 183, 3, 0.25);
         }
 
         .btn-stream:hover {
             background: var(--stark-gold);
             color: #000;
-            box-shadow: 0 0 20px var(--stark-gold);
         }
 
-        /* MAIN CONTAINER */
+        /* MAIN LAYOUT (FULL HEIGHT CHAT) */
         .main-container {
             display: flex;
             flex: 1;
-            padding: 15px;
-            gap: 15px;
+            padding: 12px;
+            gap: 12px;
             overflow: hidden;
         }
 
-        /* CHAT PANEL */
+        /* CHAT PANEL (IZQUIERDA - AMPLIO) */
         .chat-panel {
             flex: 1;
             background: var(--panel-bg);
@@ -147,7 +137,7 @@
             display: flex;
             flex-direction: column;
             padding: 15px;
-            box-shadow: inset 0 0 20px rgba(102, 0, 14, 0.5), 0 0 15px rgba(230, 57, 70, 0.15);
+            box-shadow: inset 0 0 20px rgba(102, 0, 14, 0.5);
             overflow: hidden;
         }
 
@@ -156,30 +146,27 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            padding-right: 10px;
+            gap: 12px;
+            padding-right: 8px;
         }
 
-        .chat-messages::-webkit-scrollbar {
-            width: 5px;
-        }
+        .chat-messages::-webkit-scrollbar { width: 5px; }
         .chat-messages::-webkit-scrollbar-thumb {
             background: var(--stark-red);
             border-radius: 3px;
         }
 
         .msg {
-            max-width: 85%;
-            padding: 12px 18px;
+            max-width: 88%;
+            padding: 10px 14px;
             border-radius: 6px;
-            font-size: 1rem;
-            line-height: 1.5;
-            position: relative;
-            animation: fadeIn 0.3s ease-in-out;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            animation: fadeIn 0.25s ease-in-out;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -189,7 +176,6 @@
             border: 1px solid var(--stark-gold);
             color: #fff4d9;
             border-top-right-radius: 0;
-            box-shadow: 0 0 10px rgba(255, 183, 3, 0.2);
         }
 
         .msg-jarvis {
@@ -198,85 +184,73 @@
             border: 1px solid var(--stark-red);
             color: #ffffff;
             border-top-left-radius: 0;
-            box-shadow: 0 0 15px rgba(230, 57, 70, 0.2);
         }
 
         .msg-header {
             font-family: var(--font-hud);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             letter-spacing: 1px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             opacity: 0.9;
         }
 
         .msg-user .msg-header { color: var(--stark-gold); }
         .msg-jarvis .msg-header { color: var(--stark-red); }
 
-        /* RIGHT: SCREEN PREVIEW HUD */
+        /* RIGHT PANEL: FEED + COMPACT ARC REACTOR */
         .hud-side-panel {
-            width: 300px;
+            width: 280px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .preview-box {
             background: var(--panel-bg);
             border: 1px solid var(--stark-gold);
             border-radius: 8px;
-            padding: 12px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            box-shadow: 0 0 15px rgba(255, 183, 3, 0.1);
         }
 
         .preview-title {
             font-family: var(--font-hud);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--stark-gold);
-            letter-spacing: 1.5px;
-            margin-bottom: 10px;
-            width: 100%;
-            text-align: left;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
         }
 
         video#screen-preview {
             width: 100%;
-            height: 160px;
+            height: 150px;
             object-fit: cover;
             border: 1px solid var(--stark-orange);
             border-radius: 4px;
             background: #000;
         }
 
-        /* ARC REACTOR CENTER CONTROL MARK VIBE */
-        .control-footer {
-            height: 140px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            background: linear-gradient(180deg, rgba(12, 3, 6, 0.9) 0%, rgba(30, 5, 10, 0.98) 100%);
-            border-top: 2px solid var(--stark-red);
-            backdrop-filter: blur(15px);
-        }
-
-        .arc-reactor-wrapper {
-            position: relative;
+        /* COMPACT ARC CONTROL PANEL */
+        .reactor-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--stark-red);
+            border-radius: 8px;
+            padding: 15px 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 0 15px rgba(230, 57, 70, 0.15);
         }
 
         .arc-reactor {
-            width: 82px;
-            height: 82px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: radial-gradient(circle, #ffffff 0%, var(--stark-gold) 35%, var(--stark-orange) 60%, var(--crimson-dark) 100%);
-            border: 3px solid var(--stark-gold);
-            box-shadow: 0 0 30px var(--stark-orange), inset 0 0 15px var(--stark-gold);
+            border: 2px solid var(--stark-gold);
+            box-shadow: 0 0 20px var(--stark-orange), inset 0 0 10px var(--stark-gold);
             cursor: pointer;
             display: flex;
             justify-content: center;
@@ -288,48 +262,62 @@
         .arc-reactor::before {
             content: '';
             position: absolute;
-            width: 98px;
-            height: 98px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
             border: 2px dashed var(--stark-gold);
             animation: spin 10s linear infinite;
         }
 
-        @keyframes spin {
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .arc-reactor.active {
             background: radial-gradient(circle, #ffffff 0%, var(--cyan-core) 45%, var(--stark-red) 75%, #000000 100%);
             border-color: var(--cyan-core);
-            box-shadow: 0 0 50px var(--cyan-core), inset 0 0 25px var(--cyan-core);
-            transform: scale(1.1);
+            box-shadow: 0 0 35px var(--cyan-core), inset 0 0 15px var(--cyan-core);
+            transform: scale(1.05);
         }
 
-        .arc-reactor.active::before {
-            border-color: var(--cyan-core);
-            animation-duration: 3s;
-        }
+        .arc-reactor.active::before { border-color: var(--cyan-core); animation-duration: 3s; }
 
         .arc-icon {
-            width: 32px;
-            height: 32px;
+            width: 24px;
+            height: 24px;
             fill: #110306;
-            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
         }
 
-        .arc-reactor.active .arc-icon {
-            fill: #ffffff;
-            filter: drop-shadow(0 0 6px var(--cyan-core));
-        }
+        .arc-reactor.active .arc-icon { fill: #ffffff; }
 
         .arc-status {
             font-family: var(--font-hud);
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: var(--stark-gold);
-            letter-spacing: 2px;
-            margin-top: 12px;
-            text-shadow: 0 0 8px var(--stark-gold);
+            letter-spacing: 1px;
+            text-align: center;
+            min-height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-cancel {
+            width: 100%;
+            background: rgba(230, 57, 70, 0.2);
+            border: 1px solid var(--stark-red);
+            color: #ff808b;
+            font-family: var(--font-hud);
+            font-size: 0.65rem;
+            padding: 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: var(--stark-red);
+            color: #ffffff;
+            box-shadow: 0 0 10px var(--stark-red);
         }
 
         canvas { display: none; }
@@ -341,56 +329,52 @@
     <header>
         <div class="brand-title">
             <div class="status-dot"></div>
-            J.A.R.V.I.S. <span style="font-size: 0.8rem; opacity: 0.8; color: var(--stark-red);">// MARK COPILOT</span>
+            J.A.R.V.I.S. <span style="font-size: 0.75rem; color: var(--stark-red);">// MARK COPILOT</span>
         </div>
 
         <div class="hud-controls">
-            <input type="password" id="access-key" class="hud-input" placeholder="CLAVE DE ACCESO" autocomplete="off">
-            
+            <input type="password" id="access-key" class="hud-input" placeholder="CLAVE DE ACCESO">
             <select id="model-select" class="hud-select">
-                <option value="flash">MODELO: GEMINI 3.6 FLASH</option>
-                <option value="pro">MODELO: GEMINI 3.6 PRO</option>
+                <option value="flash">GEMINI 3.6 FLASH</option>
+                <option value="pro">GEMINI 3.6 PRO</option>
             </select>
-
             <button id="btn-bind-screen" class="btn-stream">🖥️ VINCULAR PANTALLA</button>
         </div>
     </header>
 
     <!-- MAIN BODY -->
     <div class="main-container">
-        <!-- CHAT PANEL -->
+        <!-- CHAT PANEL AMAPLIADO -->
         <div class="chat-panel">
             <div id="chat-messages" class="chat-messages">
                 <div class="msg msg-jarvis">
-                    <div class="msg-header">MARK MARK-HUD // ONLINE</div>
-                    Sistemas listos, Señor. Presione "Vincular Pantalla" para sincronizar NinjaTrader/DeepCharts. Mantenga presionada la <b>BARRA ESPACIADORA</b> o el Reactor central para hablar y analizar el mercado.
+                    <div class="msg-header">SYSTEM // ONLINE</div>
+                    Sistemas listos, Señor. Vinculador activo. Presione la <b>BARRA ESPACIADORA</b> o el Reactor lateral para analizar la posición.
                 </div>
             </div>
         </div>
 
-        <!-- SIDE PANEL -->
+        <!-- PANEL DERECHO COMPACTO -->
         <div class="hud-side-panel">
             <div class="preview-box">
                 <div class="preview-title">📡 FEED PANTALLA EN VIVO</div>
                 <video id="screen-preview" autoplay playsinline muted></video>
             </div>
-        </div>
-    </div>
 
-    <!-- ARC REACTOR FOOTER -->
-    <div class="control-footer">
-        <div class="arc-reactor-wrapper">
-            <div id="arc-btn" class="arc-reactor">
-                <svg class="arc-icon" viewBox="0 0 24 24">
-                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-                </svg>
+            <!-- REACTOR + BOTÓN CANCELAR -->
+            <div class="reactor-card">
+                <div id="arc-btn" class="arc-reactor">
+                    <svg class="arc-icon" viewBox="0 0 24 24">
+                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                    </svg>
+                </div>
+                <div id="arc-status" class="arc-status">PRESIONA O MANTÉN ESPACIO</div>
+                <button id="btn-cancel" class="btn-cancel">🛑 CANCELAR CONSULTA</button>
             </div>
-            <div id="arc-status" class="arc-status">MANTÉN PRESIONADO O BARRA ESPACIADORA</div>
         </div>
     </div>
 
-    <!-- CANVAS OCULTO PARA CAPTURA -->
     <canvas id="capture-canvas"></canvas>
 
     <script>
@@ -400,6 +384,7 @@
         const screenPreview = document.getElementById('screen-preview');
         const arcBtn = document.getElementById('arc-btn');
         const arcStatus = document.getElementById('arc-status');
+        const btnCancel = document.getElementById('btn-cancel');
         const chatMessages = document.getElementById('chat-messages');
         const captureCanvas = document.getElementById('capture-canvas');
 
@@ -408,6 +393,10 @@
         let spokenTranscript = "";
         let isListening = false;
         let spacePressed = false;
+        
+        // Controladores globales de Aborto y Audio activo
+        let currentAbortController = null;
+        let currentAudio = null;
 
         // Cargar clave guardada
         accessKeyInput.value = localStorage.getItem('jarvis_key') || '';
@@ -424,11 +413,14 @@
             recognition.interimResults = true;
 
             recognition.onresult = (event) => {
-                let transcript = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    transcript += event.results[i][0].transcript;
+                let accumulated = "";
+                for (let i = 0; i < event.results.length; i++) {
+                    accumulated += event.results[i][0].transcript + " ";
                 }
-                spokenTranscript = transcript;
+                spokenTranscript = accumulated.trim();
+                if (spokenTranscript) {
+                    arcStatus.innerText = `🎙️ "${spokenTranscript.slice(-25)}..."`;
+                }
             };
         }
 
@@ -440,23 +432,50 @@
                     audio: false
                 });
                 screenPreview.srcObject = screenStream;
-                btnBindScreen.innerText = "✓ PANTALLA VINCULADA";
+                btnBindScreen.innerText = "✓ VINCULADA";
                 btnBindScreen.style.borderColor = "var(--stark-gold)";
             } catch (err) {
-                console.error("Error al vincular pantalla:", err);
-                alert("No se pudo compartir la pantalla.");
+                alert("No se seleccionó ninguna pantalla.");
             }
         });
 
-        // Eventos de Activación (Mouse, Touch y Barra Espaciadora)
+        // Cancelar consulta activa y audio
+        function stopAllOperations() {
+            if (currentAbortController) {
+                currentAbortController.abort();
+                currentAbortController = null;
+            }
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+            arcStatus.innerText = "OPERACIÓN CANCELADA";
+            arcStatus.style.color = "var(--stark-red)";
+            setTimeout(() => {
+                arcStatus.innerText = "PRESIONA O MANTÉN ESPACIO";
+                arcStatus.style.color = "var(--stark-gold)";
+            }, 1500);
+        }
+
+        btnCancel.addEventListener('click', stopAllOperations);
+
+        // Eventos de Activación
         const startListening = (e) => {
             if (e) e.preventDefault();
             if (isListening) return;
+
+            // Detener cualquier audio previo que esté sonando
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
             isListening = true;
             spokenTranscript = "";
 
             arcBtn.classList.add('active');
-            arcStatus.innerText = "ESCUCHANDO & ANALIZANDO...";
+            arcStatus.innerText = "ESCUCHANDO...";
             arcStatus.style.color = "var(--cyan-core)";
 
             if (recognition) {
@@ -470,54 +489,39 @@
             isListening = false;
 
             arcBtn.classList.remove('active');
-            arcStatus.innerText = "PROCESANDO SUBASTA...";
+            arcStatus.innerText = "PROCESANDO...";
             arcStatus.style.color = "var(--stark-gold)";
 
             if (recognition) {
                 try { recognition.stop(); } catch(e){}
             }
 
-            // Captura instantánea de la pantalla en vivo
+            // Capturar la imagen directamente desde el reproductor de video en vivo
             let imageBlob = null;
-            if (screenStream && screenStream.active) {
-                const videoTrack = screenStream.getVideoTracks()[0];
-                const imageCapture = new ImageCapture(videoTrack);
-                try {
-                    const bitmap = await imageCapture.grabFrame();
-                    captureCanvas.width = bitmap.width;
-                    captureCanvas.height = bitmap.height;
-                    const ctx = captureCanvas.getContext('2d');
-                    ctx.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
-
-                    imageBlob = await new Promise(resolve => captureCanvas.toBlob(resolve, 'image/jpeg', 0.85));
-                } catch(err) {
-                    console.log("Fallback capture", err);
-                }
+            if (screenPreview.videoWidth > 0 && screenPreview.videoHeight > 0) {
+                captureCanvas.width = screenPreview.videoWidth;
+                captureCanvas.height = screenPreview.videoHeight;
+                const ctx = captureCanvas.getContext('2d');
+                ctx.drawImage(screenPreview, 0, 0, captureCanvas.width, captureCanvas.height);
+                imageBlob = await new Promise(resolve => captureCanvas.toBlob(resolve, 'image/jpeg', 0.85));
             }
 
-            const promptText = spokenTranscript.trim() || "Analice la posición actual y la acción del precio en esta captura.";
+            const promptText = spokenTranscript || "Analice la posición actual y la acción del precio en esta captura.";
             addMessage('user', promptText);
 
             await sendToJarvis(promptText, imageBlob);
 
-            arcStatus.innerText = "MANTÉN PRESIONADO O BARRA ESPACIADORA";
-            arcStatus.style.color = "var(--stark-gold)";
+            arcStatus.innerText = "PRESIONA O MANTÉN ESPACIO";
         };
 
         // Escuchadores Mouse/Touch
         arcBtn.addEventListener('mousedown', startListening);
         arcBtn.addEventListener('mouseup', stopListeningAndSend);
-        arcBtn.addEventListener('mouseleave', stopListeningAndSend);
 
-        arcBtn.addEventListener('touchstart', startListening);
-        arcBtn.addEventListener('touchend', stopListeningAndSend);
-
-        // Escuchadores Tecla Espacio
+        // Escuchadores Barra Espaciadora
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
-                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
-                    return;
-                }
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
                 e.preventDefault();
                 if (e.repeat || spacePressed) return;
                 spacePressed = true;
@@ -527,9 +531,7 @@
 
         document.addEventListener('keyup', (e) => {
             if (e.code === 'Space') {
-                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
-                    return;
-                }
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
                 e.preventDefault();
                 if (!spacePressed) return;
                 spacePressed = false;
@@ -537,8 +539,14 @@
             }
         });
 
-        // Envío POST a la API
+        // Envío POST a la API con soporte para AbortController
         async function sendToJarvis(text, blob) {
+            // Cancelar solicitud en vuelo previa si existía
+            if (currentAbortController) {
+                currentAbortController.abort();
+            }
+            currentAbortController = new AbortController();
+
             const formData = new FormData();
             formData.append('clave', accessKeyInput.value);
             formData.append('mensaje_texto', text);
@@ -551,7 +559,8 @@
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    signal: currentAbortController.signal
                 });
 
                 const data = await response.json();
@@ -560,14 +569,23 @@
                     addMessage('jarvis', data.texto);
 
                     if (data.has_audio) {
-                        const audio = new Audio('/api/audio?t=' + new Date().getTime());
-                        audio.play();
+                        if (currentAudio) {
+                            currentAudio.pause();
+                        }
+                        currentAudio = new Audio('/api/audio?t=' + new Date().getTime());
+                        currentAudio.play();
                     }
                 } else {
                     addMessage('jarvis', 'Error: No se recibió respuesta del servidor.');
                 }
             } catch (err) {
-                addMessage('jarvis', 'Error de conexión con el servidor JARVIS.');
+                if (err.name === 'AbortError') {
+                    console.log('Consulta abortada por el usuario.');
+                } else {
+                    addMessage('jarvis', 'Error de conexión con el servidor JARVIS.');
+                }
+            } finally {
+                currentAbortController = null;
             }
         }
 
