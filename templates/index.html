@@ -3,115 +3,515 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS AI Copilot</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-950 text-slate-100 h-screen flex flex-col font-sans">
+    <title>J.A.R.V.I.S. // TACTICAL TRADING COPILOT</title>
+    <!-- Fuentes Futuristas Stark HUD -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #040914;
+            --panel-bg: rgba(8, 20, 38, 0.75);
+            --cyan-glow: #00f3ff;
+            --blue-glow: #0066ff;
+            --gold-glow: #ffb700;
+            --red-glow: #ff2a5f;
+            --border-glow: rgba(0, 243, 255, 0.35);
+            --font-hud: 'Orbitron', sans-serif;
+            --font-body: 'Rajdhani', sans-serif;
+            --font-code: 'Share Tech Mono', monospace;
+        }
 
-    <!-- Header -->
-    <header class="bg-slate-900 border-b border-slate-800 p-4 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <h1 class="text-xl font-bold text-sky-400 tracking-wider">JARVIS AI COPILOT</h1>
-            <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 30%, rgba(0, 102, 255, 0.12) 0%, transparent 60%),
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            color: #d1f4ff;
+            font-family: var(--font-body);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER HUD */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 25px;
+            background: rgba(4, 12, 24, 0.85);
+            border-bottom: 1px solid var(--border-glow);
+            box-shadow: 0 4px 20px rgba(0, 243, 255, 0.15);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .brand-title {
+            font-family: var(--font-hud);
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            color: var(--cyan-glow);
+            text-shadow: 0 0 12px rgba(0, 243, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--cyan-glow);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--cyan-glow);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .hud-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .hud-input, .hud-select {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid var(--border-glow);
+            color: var(--cyan-glow);
+            font-family: var(--font-code);
+            padding: 6px 12px;
+            border-radius: 4px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .hud-input:focus, .hud-select:focus {
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+        }
+
+        .btn-stream {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(0, 102, 255, 0.3));
+            border: 1px solid var(--cyan-glow);
+            color: #ffffff;
+            font-family: var(--font-hud);
+            font-size: 0.75rem;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        .btn-stream:hover {
+            background: var(--cyan-glow);
+            color: #000;
+            box-shadow: 0 0 20px var(--cyan-glow);
+        }
+
+        /* MAIN CONTAINER */
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 15px;
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        /* LEFT: CHAT & DIAGNOSTICS */
+        .chat-panel {
+            flex: 1;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 8px;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.05);
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-right: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--border-glow);
+            border-radius: 3px;
+        }
+
+        .msg {
+            max-width: 85%;
+            padding: 12px 18px;
+            border-radius: 6px;
+            font-size: 1rem;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-user {
+            align-self: flex-end;
+            background: rgba(0, 102, 255, 0.25);
+            border: 1px solid rgba(0, 102, 255, 0.6);
+            color: #e0f4ff;
+            border-top-right-radius: 0;
+            box-shadow: 0 0 10px rgba(0, 102, 255, 0.2);
+        }
+
+        .msg-jarvis {
+            align-self: flex-start;
+            background: rgba(0, 243, 255, 0.08);
+            border: 1px solid var(--border-glow);
+            color: #ffffff;
+            border-top-left-radius: 0;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+        }
+
+        .msg-header {
+            font-family: var(--font-hud);
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .msg-user .msg-header { color: #80c4ff; }
+        .msg-jarvis .msg-header { color: var(--cyan-glow); }
+
+        /* RIGHT: SCREEN PREVIEW HUD */
+        .hud-side-panel {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .preview-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-title {
+            font-family: var(--font-hud);
+            font-size: 0.75rem;
+            color: var(--cyan-glow);
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            width: 100%;
+            text-align: left;
+        }
+
+        video#screen-preview {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 4px;
+            background: #000;
+        }
+
+        /* ARC REACTOR CENTER CONTROL */
+        .control-footer {
+            height: 140px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: rgba(2, 6, 14, 0.9);
+            border-top: 1px solid var(--border-glow);
+            backdrop-filter: blur(15px);
+        }
+
+        .arc-reactor-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .arc-reactor {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,243,255,0.8) 0%, rgba(0,102,255,0.4) 60%, rgba(0,0,0,0.9) 100%);
+            border: 3px solid var(--cyan-glow);
+            box-shadow: 0 0 25px var(--cyan-glow), inset 0 0 15px var(--cyan-glow);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .arc-reactor::before {
+            content: '';
+            position: absolute;
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            border: 2px dashed var(--cyan-glow);
+            animation: spin 12s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .arc-reactor.active {
+            background: radial-gradient(circle, rgba(255,42,95,0.9) 0%, rgba(255,183,0,0.5) 60%, rgba(0,0,0,0.9) 100%);
+            border-color: var(--red-glow);
+            box-shadow: 0 0 45px var(--red-glow), inset 0 0 25px var(--red-glow);
+            transform: scale(1.08);
+        }
+
+        .arc-reactor.active::before {
+            border-color: var(--red-glow);
+            animation-duration: 4s;
+        }
+
+        .arc-icon {
+            width: 32px;
+            height: 32px;
+            fill: #ffffff;
+            filter: drop-shadow(0 0 5px var(--cyan-glow));
+        }
+
+        .arc-status {
+            font-family: var(--font-hud);
+            font-size: 0.75rem;
+            color: var(--cyan-glow);
+            letter-spacing: 2px;
+            margin-top: 12px;
+            text-shadow: 0 0 8px var(--cyan-glow);
+        }
+
+        canvas { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="brand-title">
+            <div class="status-dot"></div>
+            J.A.R.V.I.S. <span style="font-size: 0.8rem; opacity: 0.7;">// COPILOT</span>
         </div>
-        
-        <!-- Selector de Modelo -->
-        <div class="flex items-center gap-2">
-            <label for="modelSelect" class="text-xs text-slate-400 font-medium hidden sm:inline">Modelo:</label>
-            <select id="modelSelect" class="bg-slate-800 text-sky-300 text-xs font-semibold border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-sky-500 transition-colors">
-                <option value="flash">⚡ Flash (Rápido)</option>
-                <option value="pro">🧠 Pro (Análisis Profundo)</option>
+
+        <div class="hud-controls">
+            <input type="password" id="access-key" class="hud-input" placeholder="CLAVE DE ACCESO" autocomplete="off">
+            
+            <select id="model-select" class="hud-select">
+                <option value="flash">MODELO: GEMINI 3.6 FLASH (RÁPIDO)</option>
+                <option value="pro">MODELO: GEMINI 3.6 PRO (PROFUNDO)</option>
             </select>
+
+            <button id="btn-bind-screen" class="btn-stream">🖥️ VINCULAR PANTALLA</button>
         </div>
     </header>
 
-    <!-- Chat Container -->
-    <main id="chatBox" class="flex-1 overflow-y-auto p-4 space-y-4">
-        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 max-w-[85%] text-slate-300 text-sm">
-            Sistemas listos, Señor. ¿En qué puedo asistirlo?
+    <!-- MAIN BODY -->
+    <div class="main-container">
+        <!-- CHAT PANEL -->
+        <div class="chat-panel">
+            <div id="chat-messages" class="chat-messages">
+                <div class="msg msg-jarvis">
+                    <div class="msg-header">SYSTEM // ONLINE</div>
+                    Sistemas listos, Señor. Presione "Vincular Pantalla" para seleccionar NinjaTrader/DeepCharts y mantenga presionado el Reactor central para hablar y analizar la subasta.
+                </div>
+            </div>
         </div>
-    </main>
 
-    <!-- Controls / Input -->
-    <footer class="bg-slate-900 border-t border-slate-800 p-3">
-        <form id="chatForm" class="flex items-center gap-2 max-w-4xl mx-auto">
-            <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-xl border border-slate-700 transition">
-                📷
-                <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="previewImage(this)">
-            </label>
-            
-            <input type="text" id="textInput" placeholder="Escribe a JARVIS o presiona hablar..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 text-sm">
+        <!-- SIDE PANEL -->
+        <div class="hud-side-panel">
+            <div class="preview-box">
+                <div class="preview-title">📡 FEED PANTALLA EN VIVO</div>
+                <video id="screen-preview" autoplay playsinline muted></video>
+            </div>
+        </div>
+    </div>
 
-            <button type="button" id="micBtn" onclick="toggleRecording()" class="bg-sky-600 hover:bg-sky-500 text-white font-medium px-4 py-2.5 rounded-xl flex items-center gap-1.5 text-sm transition">
-                🎙️ <span id="micText">Hablar</span>
-            </button>
+    <!-- ARC REACTOR PUSH TO TALK FOOTER -->
+    <div class="control-footer">
+        <div class="arc-reactor-wrapper">
+            <div id="arc-btn" class="arc-reactor">
+                <svg class="arc-icon" viewBox="0 0 24 24">
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                </svg>
+            </div>
+            <div id="arc-status" class="arc-status">MANTÉN PRESIONADO PARA HABLAR</div>
+        </div>
+    </div>
 
-            <button type="submit" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold px-4 py-2.5 rounded-xl text-sm transition">
-                Enviar
-            </button>
-        </form>
-        <div id="imagePreview" class="text-xs text-sky-400 mt-1 text-center hidden">Imagen adjuntada ✓</div>
-    </footer>
+    <!-- CANVAS OCULTO PARA CAPTURA -->
+    <canvas id="capture-canvas"></canvas>
 
     <script>
-        function pedirClave() {
-            let key = localStorage.getItem('jarvis_key');
-            if (!key) {
-                key = prompt('Ingrese la clave de acceso para usar JARVIS:');
-                if (key) {
-                    localStorage.setItem('jarvis_key', key.trim());
-                }
-            }
-            return key;
-        }
+        const accessKeyInput = document.getElementById('access-key');
+        const modelSelect = document.getElementById('model-select');
+        const btnBindScreen = document.getElementById('btn-bind-screen');
+        const screenPreview = document.getElementById('screen-preview');
+        const arcBtn = document.getElementById('arc-btn');
+        const arcStatus = document.getElementById('arc-status');
+        const chatMessages = document.getElementById('chat-messages');
+        const captureCanvas = document.getElementById('capture-canvas');
 
-        pedirClave();
+        let screenStream = null;
+        let recognition = null;
+        let spokenTranscript = "";
+        let isListening = false;
 
-        let recognition;
-        let isRecording = false;
+        // Cargar clave guardada previamente
+        accessKeyInput.value = localStorage.getItem('jarvis_key') || '';
+        accessKeyInput.addEventListener('input', () => {
+            localStorage.setItem('jarvis_key', accessKeyInput.value);
+        });
 
+        // Configuración de Reconocimiento de Voz Web
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
             recognition.lang = 'es-ES';
-            recognition.continuous = false;
-            recognition.interimResults = false;
+            recognition.continuous = true;
+            recognition.interimResults = true;
 
             recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('textInput').value = transcript;
-                stopRecordingUI();
-                document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                spokenTranscript = transcript;
             };
-
-            recognition.onerror = () => stopRecordingUI();
-            recognition.onend = () => stopRecordingUI();
         }
 
-        function addMessage(text, isUser = false) {
-            const chatBox = document.getElementById('chatBox');
-            const div = document.createElement('div');
-            div.className = isUser 
-                ? 'bg-sky-600 text-white rounded-xl p-3 max-w-[85%] ml-auto text-sm shadow-md'
-                : 'bg-slate-900 border border-slate-800 rounded-xl p-3 max-w-[85%] text-slate-200 text-sm shadow-md';
-            div.innerText = text;
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function previewImage(input) {
-            const preview = document.getElementById('imagePreview');
-            if (input.files && input.files[0]) {
-                preview.classList.remove('hidden');
-            } else {
-                preview.classList.add('hidden');
+        // Vincular Captura de Pantalla
+        btnBindScreen.addEventListener('click', async () => {
+            try {
+                screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { cursor: "always" },
+                    audio: false
+                });
+                screenPreview.srcObject = screenStream;
+                btnBindScreen.innerText = "✓ PANTALLA VINCULADA";
+                btnBindScreen.style.borderColor = "var(--cyan-glow)";
+            } catch (err) {
+                console.error("Error al vincular pantalla:", err);
+                alert("No se pudo compartir la pantalla.");
             }
-        }
+        });
 
-        async function sendData(formData) {
-            let key = localStorage.getItem('jarvis_key') || pedirClave();
-            formData.append('clave', key || '');
-            formData.append('modelo', document.getElementById('modelSelect').value);
+        // Eventos de Presionar y Soltar (Mouse & Touch)
+        const startListening = (e) => {
+            e.preventDefault();
+            if (isListening) return;
+            isListening = true;
+            spokenTranscript = "";
+
+            arcBtn.classList.add('active');
+            arcStatus.innerText = "ESCUCHANDO & ANALIZANDO...";
+            arcStatus.style.color = "var(--red-glow)";
+
+            if (recognition) {
+                try { recognition.start(); } catch(e){}
+            }
+        };
+
+        const stopListeningAndSend = async (e) => {
+            e.preventDefault();
+            if (!isListening) return;
+            isListening = false;
+
+            arcBtn.classList.remove('active');
+            arcStatus.innerText = "PROCESANDO SUBASTA...";
+            arcStatus.style.color = "var(--gold-glow)";
+
+            if (recognition) {
+                try { recognition.stop(); } catch(e){}
+            }
+
+            // Capturar la imagen actual de la pantalla
+            let imageBlob = null;
+            if (screenStream && screenStream.active) {
+                const videoTrack = screenStream.getVideoTracks()[0];
+                const imageCapture = new ImageCapture(videoTrack);
+                try {
+                    const bitmap = await imageCapture.grabFrame();
+                    captureCanvas.width = bitmap.width;
+                    captureCanvas.height = bitmap.height;
+                    const ctx = captureCanvas.getContext('2d');
+                    ctx.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
+
+                    imageBlob = await new Promise(resolve => captureCanvas.toBlob(resolve, 'image/jpeg', 0.85));
+                } catch(err) {
+                    console.log("Fallback canvas capture", err);
+                }
+            }
+
+            const promptText = spokenTranscript.trim() || "Analice el estado del mercado en esta captura de pantalla.";
+            addMessage('user', promptText);
+
+            // Enviar petición al Backend
+            await sendToJarvis(promptText, imageBlob);
+
+            arcStatus.innerText = "MANTÉN PRESIONADO PARA HABLAR";
+            arcStatus.style.color = "var(--cyan-glow)";
+        };
+
+        arcBtn.addEventListener('mousedown', startListening);
+        arcBtn.addEventListener('mouseup', stopListeningAndSend);
+        arcBtn.addEventListener('mouseleave', stopListeningAndSend);
+
+        arcBtn.addEventListener('touchstart', startListening);
+        arcBtn.addEventListener('touchend', stopListeningAndSend);
+
+        // Envío POST a la API
+        async function sendToJarvis(text, blob) {
+            const formData = new FormData();
+            formData.append('clave', accessKeyInput.value);
+            formData.append('mensaje_texto', text);
+            formData.append('modelo', modelSelect.value);
+
+            if (blob) {
+                formData.append('image_file', blob, 'screenshot.jpg');
+            }
 
             try {
                 const response = await fetch('/api/chat', {
@@ -119,75 +519,39 @@
                     body: formData
                 });
 
-                if (response.status === 401) {
-                    alert('Clave de acceso incorrecta. Por favor intente de nuevo.');
-                    localStorage.removeItem('jarvis_key');
-                    pedirClave();
-                    return;
-                }
-
                 const data = await response.json();
-                
-                if(data.texto) {
-                    addMessage(data.texto, false);
-                    if(data.has_audio) {
+
+                if (data.texto) {
+                    addMessage('jarvis', data.texto);
+
+                    if (data.has_audio) {
                         const audio = new Audio('/api/audio?t=' + new Date().getTime());
                         audio.play();
                     }
+                } else {
+                    addMessage('jarvis', 'Error: No se recibió respuesta del servidor.');
                 }
             } catch (err) {
-                addMessage('Error de conexión con JARVIS.', false);
+                addMessage('jarvis', 'Error de conexión con el servidor JARVIS.');
             }
         }
 
-        document.getElementById('chatForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const input = document.getElementById('textInput');
-            const imgInput = document.getElementById('imageInput');
-            const text = input.value.trim();
+        function addMessage(sender, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg msg-${sender}`;
+            
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'msg-header';
+            headerDiv.innerText = sender === 'user' ? 'OPERADOR' : 'J.A.R.V.I.S.';
 
-            if (!text && !imgInput.files[0]) return;
+            const contentDiv = document.createElement('div');
+            contentDiv.innerText = text;
 
-            if (text) addMessage(text, true);
-            else addMessage('[Imagen enviada]', true);
+            msgDiv.appendChild(headerDiv);
+            msgDiv.appendChild(contentDiv);
 
-            const formData = new FormData();
-            if (text) formData.append('mensaje_texto', text);
-            if (imgInput.files[0]) formData.append('image_file', imgInput.files[0]);
-
-            input.value = '';
-            imgInput.value = '';
-            document.getElementById('imagePreview').classList.add('hidden');
-
-            await sendData(formData);
-        });
-
-        function toggleRecording() {
-            if (!recognition) {
-                alert('El navegador no soporta reconocimiento de voz nativo.');
-                return;
-            }
-
-            const micBtn = document.getElementById('micBtn');
-            const micText = document.getElementById('micText');
-
-            if (!isRecording) {
-                recognition.start();
-                isRecording = true;
-                micBtn.classList.replace('bg-sky-600', 'bg-red-600');
-                micText.innerText = 'Escuchando...';
-            } else {
-                recognition.stop();
-                stopRecordingUI();
-            }
-        }
-
-        function stopRecordingUI() {
-            const micBtn = document.getElementById('micBtn');
-            const micText = document.getElementById('micText');
-            isRecording = false;
-            micBtn.classList.replace('bg-red-600', 'bg-sky-600');
-            micText.innerText = 'Hablar';
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
     </script>
 </body>
