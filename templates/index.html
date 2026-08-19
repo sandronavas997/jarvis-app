@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J.A.R.V.I.S. // TACTICAL TRADING COPILOT</title>
+    <title>J.A.R.V.I.S. // MARK-HUD TRADING COPILOT</title>
     <!-- Fuentes Futuristas Stark HUD -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #040914;
-            --panel-bg: rgba(8, 20, 38, 0.75);
-            --cyan-glow: #00f3ff;
-            --blue-glow: #0066ff;
-            --gold-glow: #ffb700;
-            --red-glow: #ff2a5f;
-            --border-glow: rgba(0, 243, 255, 0.35);
+            --bg-dark: #080305;
+            --panel-bg: rgba(20, 6, 10, 0.85);
+            --stark-gold: #ffb703;
+            --stark-orange: #ff7700;
+            --stark-red: #e63946;
+            --crimson-dark: #66000e;
+            --cyan-core: #00f3ff;
+            --gold-glow: rgba(255, 183, 3, 0.4);
+            --red-glow: rgba(230, 57, 70, 0.5);
             --font-hud: 'Orbitron', sans-serif;
             --font-body: 'Rajdhani', sans-serif;
             --font-code: 'Share Tech Mono', monospace;
@@ -32,11 +34,12 @@
         body {
             background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(circle at 50% 30%, rgba(0, 102, 255, 0.12) 0%, transparent 60%),
-                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-            background-size: 100% 100%, 30px 30px, 30px 30px;
-            color: #d1f4ff;
+                radial-gradient(circle at 50% 20%, rgba(230, 57, 70, 0.15) 0%, transparent 65%),
+                radial-gradient(circle at 50% 80%, rgba(255, 183, 3, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(255, 183, 3, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 183, 3, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            color: #ffe6e8;
             font-family: var(--font-body);
             height: 100vh;
             overflow: hidden;
@@ -50,9 +53,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 25px;
-            background: rgba(4, 12, 24, 0.85);
-            border-bottom: 1px solid var(--border-glow);
-            box-shadow: 0 4px 20px rgba(0, 243, 255, 0.15);
+            background: linear-gradient(180deg, rgba(30, 5, 10, 0.95) 0%, rgba(12, 3, 6, 0.9) 100%);
+            border-bottom: 2px solid var(--stark-red);
+            box-shadow: 0 4px 20px rgba(230, 57, 70, 0.3);
             backdrop-filter: blur(10px);
             z-index: 10;
         }
@@ -62,8 +65,8 @@
             font-size: 1.4rem;
             font-weight: 900;
             letter-spacing: 3px;
-            color: var(--cyan-glow);
-            text-shadow: 0 0 12px rgba(0, 243, 255, 0.7);
+            color: var(--stark-gold);
+            text-shadow: 0 0 12px var(--stark-gold);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -72,9 +75,9 @@
         .status-dot {
             width: 10px;
             height: 10px;
-            background-color: var(--cyan-glow);
+            background-color: var(--stark-gold);
             border-radius: 50%;
-            box-shadow: 0 0 10px var(--cyan-glow);
+            box-shadow: 0 0 10px var(--stark-gold);
             animation: blink 2s infinite;
         }
 
@@ -90,9 +93,9 @@
         }
 
         .hud-input, .hud-select {
-            background: rgba(0, 243, 255, 0.05);
-            border: 1px solid var(--border-glow);
-            color: var(--cyan-glow);
+            background: rgba(255, 183, 3, 0.06);
+            border: 1px solid var(--stark-gold);
+            color: var(--stark-gold);
             font-family: var(--font-code);
             padding: 6px 12px;
             border-radius: 4px;
@@ -101,13 +104,13 @@
         }
 
         .hud-input:focus, .hud-select:focus {
-            border-color: var(--cyan-glow);
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+            border-color: var(--stark-orange);
+            box-shadow: 0 0 12px var(--stark-orange);
         }
 
         .btn-stream {
-            background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(0, 102, 255, 0.3));
-            border: 1px solid var(--cyan-glow);
+            background: linear-gradient(135deg, rgba(230, 57, 70, 0.3), rgba(255, 183, 3, 0.4));
+            border: 1px solid var(--stark-gold);
             color: #ffffff;
             font-family: var(--font-hud);
             font-size: 0.75rem;
@@ -116,13 +119,13 @@
             cursor: pointer;
             letter-spacing: 1px;
             transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 12px rgba(255, 183, 3, 0.25);
         }
 
         .btn-stream:hover {
-            background: var(--cyan-glow);
+            background: var(--stark-gold);
             color: #000;
-            box-shadow: 0 0 20px var(--cyan-glow);
+            box-shadow: 0 0 20px var(--stark-gold);
         }
 
         /* MAIN CONTAINER */
@@ -134,17 +137,17 @@
             overflow: hidden;
         }
 
-        /* LEFT: CHAT & DIAGNOSTICS */
+        /* CHAT PANEL */
         .chat-panel {
             flex: 1;
             background: var(--panel-bg);
-            border: 1px solid var(--border-glow);
+            border: 1px solid var(--stark-red);
             border-radius: 8px;
             backdrop-filter: blur(12px);
             display: flex;
             flex-direction: column;
             padding: 15px;
-            box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(102, 0, 14, 0.5), 0 0 15px rgba(230, 57, 70, 0.15);
             overflow: hidden;
         }
 
@@ -161,7 +164,7 @@
             width: 5px;
         }
         .chat-messages::-webkit-scrollbar-thumb {
-            background: var(--border-glow);
+            background: var(--stark-red);
             border-radius: 3px;
         }
 
@@ -182,20 +185,20 @@
 
         .msg-user {
             align-self: flex-end;
-            background: rgba(0, 102, 255, 0.25);
-            border: 1px solid rgba(0, 102, 255, 0.6);
-            color: #e0f4ff;
+            background: rgba(255, 183, 3, 0.15);
+            border: 1px solid var(--stark-gold);
+            color: #fff4d9;
             border-top-right-radius: 0;
-            box-shadow: 0 0 10px rgba(0, 102, 255, 0.2);
+            box-shadow: 0 0 10px rgba(255, 183, 3, 0.2);
         }
 
         .msg-jarvis {
             align-self: flex-start;
-            background: rgba(0, 243, 255, 0.08);
-            border: 1px solid var(--border-glow);
+            background: rgba(230, 57, 70, 0.15);
+            border: 1px solid var(--stark-red);
             color: #ffffff;
             border-top-left-radius: 0;
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+            box-shadow: 0 0 15px rgba(230, 57, 70, 0.2);
         }
 
         .msg-header {
@@ -203,11 +206,11 @@
             font-size: 0.75rem;
             letter-spacing: 1px;
             margin-bottom: 5px;
-            opacity: 0.8;
+            opacity: 0.9;
         }
 
-        .msg-user .msg-header { color: #80c4ff; }
-        .msg-jarvis .msg-header { color: var(--cyan-glow); }
+        .msg-user .msg-header { color: var(--stark-gold); }
+        .msg-jarvis .msg-header { color: var(--stark-red); }
 
         /* RIGHT: SCREEN PREVIEW HUD */
         .hud-side-panel {
@@ -219,18 +222,19 @@
 
         .preview-box {
             background: var(--panel-bg);
-            border: 1px solid var(--border-glow);
+            border: 1px solid var(--stark-gold);
             border-radius: 8px;
             padding: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            box-shadow: 0 0 15px rgba(255, 183, 3, 0.1);
         }
 
         .preview-title {
             font-family: var(--font-hud);
             font-size: 0.75rem;
-            color: var(--cyan-glow);
+            color: var(--stark-gold);
             letter-spacing: 1.5px;
             margin-bottom: 10px;
             width: 100%;
@@ -241,20 +245,20 @@
             width: 100%;
             height: 160px;
             object-fit: cover;
-            border: 1px solid rgba(0, 243, 255, 0.3);
+            border: 1px solid var(--stark-orange);
             border-radius: 4px;
             background: #000;
         }
 
-        /* ARC REACTOR CENTER CONTROL */
+        /* ARC REACTOR CENTER CONTROL MARK VIBE */
         .control-footer {
             height: 140px;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
-            background: rgba(2, 6, 14, 0.9);
-            border-top: 1px solid var(--border-glow);
+            background: linear-gradient(180deg, rgba(12, 3, 6, 0.9) 0%, rgba(30, 5, 10, 0.98) 100%);
+            border-top: 2px solid var(--stark-red);
             backdrop-filter: blur(15px);
         }
 
@@ -267,12 +271,12 @@
         }
 
         .arc-reactor {
-            width: 80px;
-            height: 80px;
+            width: 82px;
+            height: 82px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(0,243,255,0.8) 0%, rgba(0,102,255,0.4) 60%, rgba(0,0,0,0.9) 100%);
-            border: 3px solid var(--cyan-glow);
-            box-shadow: 0 0 25px var(--cyan-glow), inset 0 0 15px var(--cyan-glow);
+            background: radial-gradient(circle, #ffffff 0%, var(--stark-gold) 35%, var(--stark-orange) 60%, var(--crimson-dark) 100%);
+            border: 3px solid var(--stark-gold);
+            box-shadow: 0 0 30px var(--stark-orange), inset 0 0 15px var(--stark-gold);
             cursor: pointer;
             display: flex;
             justify-content: center;
@@ -284,11 +288,11 @@
         .arc-reactor::before {
             content: '';
             position: absolute;
-            width: 96px;
-            height: 96px;
+            width: 98px;
+            height: 98px;
             border-radius: 50%;
-            border: 2px dashed var(--cyan-glow);
-            animation: spin 12s linear infinite;
+            border: 2px dashed var(--stark-gold);
+            animation: spin 10s linear infinite;
         }
 
         @keyframes spin {
@@ -296,31 +300,36 @@
         }
 
         .arc-reactor.active {
-            background: radial-gradient(circle, rgba(255,42,95,0.9) 0%, rgba(255,183,0,0.5) 60%, rgba(0,0,0,0.9) 100%);
-            border-color: var(--red-glow);
-            box-shadow: 0 0 45px var(--red-glow), inset 0 0 25px var(--red-glow);
-            transform: scale(1.08);
+            background: radial-gradient(circle, #ffffff 0%, var(--cyan-core) 45%, var(--stark-red) 75%, #000000 100%);
+            border-color: var(--cyan-core);
+            box-shadow: 0 0 50px var(--cyan-core), inset 0 0 25px var(--cyan-core);
+            transform: scale(1.1);
         }
 
         .arc-reactor.active::before {
-            border-color: var(--red-glow);
-            animation-duration: 4s;
+            border-color: var(--cyan-core);
+            animation-duration: 3s;
         }
 
         .arc-icon {
             width: 32px;
             height: 32px;
+            fill: #110306;
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
+        }
+
+        .arc-reactor.active .arc-icon {
             fill: #ffffff;
-            filter: drop-shadow(0 0 5px var(--cyan-glow));
+            filter: drop-shadow(0 0 6px var(--cyan-core));
         }
 
         .arc-status {
             font-family: var(--font-hud);
             font-size: 0.75rem;
-            color: var(--cyan-glow);
+            color: var(--stark-gold);
             letter-spacing: 2px;
             margin-top: 12px;
-            text-shadow: 0 0 8px var(--cyan-glow);
+            text-shadow: 0 0 8px var(--stark-gold);
         }
 
         canvas { display: none; }
@@ -332,15 +341,15 @@
     <header>
         <div class="brand-title">
             <div class="status-dot"></div>
-            J.A.R.V.I.S. <span style="font-size: 0.8rem; opacity: 0.7;">// COPILOT</span>
+            J.A.R.V.I.S. <span style="font-size: 0.8rem; opacity: 0.8; color: var(--stark-red);">// MARK COPILOT</span>
         </div>
 
         <div class="hud-controls">
             <input type="password" id="access-key" class="hud-input" placeholder="CLAVE DE ACCESO" autocomplete="off">
             
             <select id="model-select" class="hud-select">
-                <option value="flash">MODELO: GEMINI 3.6 FLASH (RÁPIDO)</option>
-                <option value="pro">MODELO: GEMINI 3.6 PRO (PROFUNDO)</option>
+                <option value="flash">MODELO: GEMINI 3.6 FLASH</option>
+                <option value="pro">MODELO: GEMINI 3.6 PRO</option>
             </select>
 
             <button id="btn-bind-screen" class="btn-stream">🖥️ VINCULAR PANTALLA</button>
@@ -353,8 +362,8 @@
         <div class="chat-panel">
             <div id="chat-messages" class="chat-messages">
                 <div class="msg msg-jarvis">
-                    <div class="msg-header">SYSTEM // ONLINE</div>
-                    Sistemas listos, Señor. Presione "Vincular Pantalla" para seleccionar NinjaTrader/DeepCharts y mantenga presionado el Reactor central para hablar y analizar la subasta.
+                    <div class="msg-header">MARK MARK-HUD // ONLINE</div>
+                    Sistemas listos, Señor. Presione "Vincular Pantalla" para sincronizar NinjaTrader/DeepCharts. Mantenga presionada la <b>BARRA ESPACIADORA</b> o el Reactor central para hablar y analizar el mercado.
                 </div>
             </div>
         </div>
@@ -368,7 +377,7 @@
         </div>
     </div>
 
-    <!-- ARC REACTOR PUSH TO TALK FOOTER -->
+    <!-- ARC REACTOR FOOTER -->
     <div class="control-footer">
         <div class="arc-reactor-wrapper">
             <div id="arc-btn" class="arc-reactor">
@@ -377,7 +386,7 @@
                     <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
                 </svg>
             </div>
-            <div id="arc-status" class="arc-status">MANTÉN PRESIONADO PARA HABLAR</div>
+            <div id="arc-status" class="arc-status">MANTÉN PRESIONADO O BARRA ESPACIADORA</div>
         </div>
     </div>
 
@@ -398,8 +407,9 @@
         let recognition = null;
         let spokenTranscript = "";
         let isListening = false;
+        let spacePressed = false;
 
-        // Cargar clave guardada previamente
+        // Cargar clave guardada
         accessKeyInput.value = localStorage.getItem('jarvis_key') || '';
         accessKeyInput.addEventListener('input', () => {
             localStorage.setItem('jarvis_key', accessKeyInput.value);
@@ -431,23 +441,23 @@
                 });
                 screenPreview.srcObject = screenStream;
                 btnBindScreen.innerText = "✓ PANTALLA VINCULADA";
-                btnBindScreen.style.borderColor = "var(--cyan-glow)";
+                btnBindScreen.style.borderColor = "var(--stark-gold)";
             } catch (err) {
                 console.error("Error al vincular pantalla:", err);
                 alert("No se pudo compartir la pantalla.");
             }
         });
 
-        // Eventos de Presionar y Soltar (Mouse & Touch)
+        // Eventos de Activación (Mouse, Touch y Barra Espaciadora)
         const startListening = (e) => {
-            e.preventDefault();
+            if (e) e.preventDefault();
             if (isListening) return;
             isListening = true;
             spokenTranscript = "";
 
             arcBtn.classList.add('active');
             arcStatus.innerText = "ESCUCHANDO & ANALIZANDO...";
-            arcStatus.style.color = "var(--red-glow)";
+            arcStatus.style.color = "var(--cyan-core)";
 
             if (recognition) {
                 try { recognition.start(); } catch(e){}
@@ -455,19 +465,19 @@
         };
 
         const stopListeningAndSend = async (e) => {
-            e.preventDefault();
+            if (e) e.preventDefault();
             if (!isListening) return;
             isListening = false;
 
             arcBtn.classList.remove('active');
             arcStatus.innerText = "PROCESANDO SUBASTA...";
-            arcStatus.style.color = "var(--gold-glow)";
+            arcStatus.style.color = "var(--stark-gold)";
 
             if (recognition) {
                 try { recognition.stop(); } catch(e){}
             }
 
-            // Capturar la imagen actual de la pantalla
+            // Captura instantánea de la pantalla en vivo
             let imageBlob = null;
             if (screenStream && screenStream.active) {
                 const videoTrack = screenStream.getVideoTracks()[0];
@@ -481,26 +491,51 @@
 
                     imageBlob = await new Promise(resolve => captureCanvas.toBlob(resolve, 'image/jpeg', 0.85));
                 } catch(err) {
-                    console.log("Fallback canvas capture", err);
+                    console.log("Fallback capture", err);
                 }
             }
 
-            const promptText = spokenTranscript.trim() || "Analice el estado del mercado en esta captura de pantalla.";
+            const promptText = spokenTranscript.trim() || "Analice la posición actual y la acción del precio en esta captura.";
             addMessage('user', promptText);
 
-            // Enviar petición al Backend
             await sendToJarvis(promptText, imageBlob);
 
-            arcStatus.innerText = "MANTÉN PRESIONADO PARA HABLAR";
-            arcStatus.style.color = "var(--cyan-glow)";
+            arcStatus.innerText = "MANTÉN PRESIONADO O BARRA ESPACIADORA";
+            arcStatus.style.color = "var(--stark-gold)";
         };
 
+        // Escuchadores Mouse/Touch
         arcBtn.addEventListener('mousedown', startListening);
         arcBtn.addEventListener('mouseup', stopListeningAndSend);
         arcBtn.addEventListener('mouseleave', stopListeningAndSend);
 
         arcBtn.addEventListener('touchstart', startListening);
         arcBtn.addEventListener('touchend', stopListeningAndSend);
+
+        // Escuchadores Tecla Espacio
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                    return;
+                }
+                e.preventDefault();
+                if (e.repeat || spacePressed) return;
+                spacePressed = true;
+                startListening(e);
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                    return;
+                }
+                e.preventDefault();
+                if (!spacePressed) return;
+                spacePressed = false;
+                stopListeningAndSend(e);
+            }
+        });
 
         // Envío POST a la API
         async function sendToJarvis(text, blob) {
