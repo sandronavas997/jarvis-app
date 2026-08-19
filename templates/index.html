@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS AI Copilot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col font-sans">
+
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-800 p-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold text-sky-400 tracking-wider">JARVIS AI COPILOT</h1>
+            <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
+        </div>
+        
+        <!-- Selector de Modelo -->
+        <div class="flex items-center gap-2">
+            <label for="modelSelect" class="text-xs text-slate-400 font-medium hidden sm:inline">Modelo:</label>
+            <select id="modelSelect" class="bg-slate-800 text-sky-300 text-xs font-semibold border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-sky-500 transition-colors">
+                <option value="flash">⚡ Flash (Rápido)</option>
+                <option value="pro">🧠 Pro (Análisis Profundo)</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- Chat Container -->
+    <main id="chatBox" class="flex-1 overflow-y-auto p-4 space-y-4">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 max-w-[85%] text-slate-300 text-sm">
+            Sistemas listos, Señor. ¿En qué puedo asistirlo?
+        </div>
+    </main>
+
+    <!-- Controls / Input -->
+    <footer class="bg-slate-900 border-t border-slate-800 p-3">
+        <form id="chatForm" class="flex items-center gap-2 max-w-4xl mx-auto">
+            <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-xl border border-slate-700 transition">
+                📷
+                <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="previewImage(this)">
+            </label>
+            
+            <input type="text" id="textInput" placeholder="Escribe a JARVIS o presiona hablar..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 text-sm">
+
+            <button type="button" id="micBtn" onclick="toggleRecording()" class="bg-sky-600 hover:bg-sky-500 text-white font-medium px-4 py-2.5 rounded-xl flex items-center gap-1.5 text-sm transition">
+                🎙️ <span id="micText">Hablar</span>
+            </button>
+
+            <button type="submit" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold px-4 py-2.5 rounded-xl text-sm transition">
+                Enviar
+            </button>
+        </form>
+        <div id="imagePreview" class="text-xs text-sky-400 mt-1 text-center hidden">Imagen adjuntada ✓</div>
+    </footer>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        function addMessage(text, isUser = false) {
+            const chatBox = document.getElementById('chatBox');
+            const div = document.createElement('div');
+            div.className = isUser 
+                ? 'bg-sky-600 text-white rounded-xl p-3 max-w-[85%] ml-auto text-sm shadow-md'
+                : 'bg-slate-900 border border-slate-800 rounded-xl p-3 max-w-[85%] text-slate-200 text-sm shadow-md';
+            div.innerText = text;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            if (input.files && input.files[0]) {
+                preview.classList.remove('hidden');
+            } else {
+                preview.classList.add('hidden');
+            }
+        }
+
+        async function sendData(formData) {
+            // Adjuntar el modelo seleccionado actualmente
+            const modelVal = document.getElementById('modelSelect').value;
+            formData.append('modelo', modelVal);
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if(data.texto) {
+                    addMessage(data.texto, false);
+                    if(data.audio_url) {
+                        const audio = new Audio(data.audio_url + '?t=' + new Date().getTime());
+                        audio.play();
+                    }
+                }
+            } catch (err) {
+                addMessage('Error de conexión con JARVIS.', false);
+            }
+        }
+
+        document.getElementById('chatForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('textInput');
+            const imgInput = document.getElementById('imageInput');
+            const text = input.value.trim();
+
+            if (!text && !imgInput.files[0]) return;
+
+            if (text) addMessage(text, true);
+            else addMessage('[Imagen enviada]', true);
+
+            const formData = new FormData();
+            if (text) formData.append('mensaje_texto', text);
+            if (imgInput.files[0]) formData.append('image_file', imgInput.files[0]);
+
+            input.value = '';
+            imgInput.value = '';
+            document.getElementById('imagePreview').classList.add('hidden');
+
+            await sendData(formData);
+        });
+
+        async function toggleRecording() {
+            const micBtn = document.getElementById('micBtn');
+            const micText = document.getElementById('micText');
+
+            if (!isRecording) {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    addMessage('[Mensaje de voz enviado]', true);
+                    const formData = new FormData();
+                    formData.append('audio_file', audioBlob);
+                    await sendData(formData);
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                micBtn.classList.replace('bg-sky-600', 'bg-red-600');
+                micText.innerText = 'Detener';
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                micBtn.classList.replace('bg-red-600', 'bg-sky-600');
+                micText.innerText = 'Hablar';
+            }
+        }
+    </script>
+</body>
+</html>
