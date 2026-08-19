@@ -32,14 +32,15 @@ async def chat(
     image_file: UploadFile = File(None),
     modelo: str = Form("flash")
 ):
-    # Verificación de clave de acceso si está configurada en Render
+    # Verificación de clave de acceso
     if ACCESS_CODE and clave != ACCESS_CODE:
         raise HTTPException(status_code=401, detail="Clave de acceso incorrecta.")
 
     if not client:
         return {"texto": "Error: La variable GEMINI_API_KEY no está configurada en Render."}
 
-    model_name = "gemini-2.5-flash" if modelo == "flash" else "gemini-2.5-pro"
+    # Nombres de modelos actualizados
+    model_name = "gemini-3.6-flash" if modelo == "flash" else "gemini-3.6-pro"
 
     contents = []
     if image_file and image_file.filename:
