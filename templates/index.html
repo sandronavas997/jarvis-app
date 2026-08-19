@@ -54,9 +54,39 @@
     </footer>
 
     <script>
-        let mediaRecorder;
-        let audioChunks = [];
+        function pedirClave() {
+            let key = localStorage.getItem('jarvis_key');
+            if (!key) {
+                key = prompt('Ingrese la clave de acceso para usar JARVIS:');
+                if (key) {
+                    localStorage.setItem('jarvis_key', key.trim());
+                }
+            }
+            return key;
+        }
+
+        pedirClave();
+
+        let recognition;
         let isRecording = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('textInput').value = transcript;
+                stopRecordingUI();
+                document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+            };
+
+            recognition.onerror = () => stopRecordingUI();
+            recognition.onend = () => stopRecordingUI();
+        }
 
         function addMessage(text, isUser = false) {
             const chatBox = document.getElementById('chatBox');
@@ -79,21 +109,29 @@
         }
 
         async function sendData(formData) {
-            // Adjuntar el modelo seleccionado actualmente
-            const modelVal = document.getElementById('modelSelect').value;
-            formData.append('modelo', modelVal);
+            let key = localStorage.getItem('jarvis_key') || pedirClave();
+            formData.append('clave', key || '');
+            formData.append('modelo', document.getElementById('modelSelect').value);
 
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     body: formData
                 });
+
+                if (response.status === 401) {
+                    alert('Clave de acceso incorrecta. Por favor intente de nuevo.');
+                    localStorage.removeItem('jarvis_key');
+                    pedirClave();
+                    return;
+                }
+
                 const data = await response.json();
                 
                 if(data.texto) {
                     addMessage(data.texto, false);
-                    if(data.audio_url) {
-                        const audio = new Audio(data.audio_url + '?t=' + new Date().getTime());
+                    if(data.has_audio) {
+                        const audio = new Audio('/api/audio?t=' + new Date().getTime());
                         audio.play();
                     }
                 }
@@ -124,34 +162,32 @@
             await sendData(formData);
         });
 
-        async function toggleRecording() {
+        function toggleRecording() {
+            if (!recognition) {
+                alert('El navegador no soporta reconocimiento de voz nativo.');
+                return;
+            }
+
             const micBtn = document.getElementById('micBtn');
             const micText = document.getElementById('micText');
 
             if (!isRecording) {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-
-                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    addMessage('[Mensaje de voz enviado]', true);
-                    const formData = new FormData();
-                    formData.append('audio_file', audioBlob);
-                    await sendData(formData);
-                };
-
-                mediaRecorder.start();
+                recognition.start();
                 isRecording = true;
                 micBtn.classList.replace('bg-sky-600', 'bg-red-600');
-                micText.innerText = 'Detener';
+                micText.innerText = 'Escuchando...';
             } else {
-                mediaRecorder.stop();
-                isRecording = false;
-                micBtn.classList.replace('bg-red-600', 'bg-sky-600');
-                micText.innerText = 'Hablar';
+                recognition.stop();
+                stopRecordingUI();
             }
+        }
+
+        function stopRecordingUI() {
+            const micBtn = document.getElementById('micBtn');
+            const micText = document.getElementById('micText');
+            isRecording = false;
+            micBtn.classList.replace('bg-red-600', 'bg-sky-600');
+            micText.innerText = 'Hablar';
         }
     </script>
 </body>
