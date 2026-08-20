@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J.A.R.V.I.S. // LIVE MARK-HUD TRADING COPILOT</title>
+    <title>J.A.R.V.I.S. // MARK-HUD TRADING COPILOT</title>
     <!-- Fuentes HUD Stark -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght=400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-dark: #080305;
@@ -123,7 +123,7 @@
             color: #000;
         }
 
-        /* MAIN LAYOUT */
+        /* MAIN LAYOUT (FULL HEIGHT CHAT) */
         .main-container {
             display: flex;
             flex: 1;
@@ -132,7 +132,7 @@
             overflow: hidden;
         }
 
-        /* CHAT PANEL */
+        /* CHAT PANEL (IZQUIERDA - AMPLIO) */
         .chat-panel {
             flex: 1;
             background: var(--panel-bg);
@@ -169,6 +169,48 @@
             text-shadow: 0 0 5px var(--cyan-core);
         }
 
+        .msg {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-user {
+            align-self: flex-end;
+            background: rgba(255, 183, 3, 0.15);
+            border: 1px solid var(--stark-gold);
+            color: #fff4d9;
+            border-top-right-radius: 0;
+        }
+
+        .msg-jarvis {
+            align-self: flex-start;
+            background: rgba(230, 57, 70, 0.15);
+            border: 1px solid var(--stark-red);
+            color: #ffffff;
+            border-top-left-radius: 0;
+        }
+
+        .msg-header {
+            font-family: var(--font-hud);
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            opacity: 0.9;
+        }
+
+        .msg-user .msg-header { color: var(--stark-gold); }
+        .msg-jarvis .msg-header { color: var(--stark-red); }
+
         /* RIGHT PANEL: RECON / REACTOR */
         .hud-side-panel {
             width: 280px;
@@ -197,7 +239,7 @@
         video#screen-preview {
             width: 100%;
             height: 150px;
-            object-fit: contain;
+            object-fit: cover;
             border: 1px solid var(--stark-orange);
             border-radius: 4px;
             background: #000;
@@ -301,15 +343,15 @@
     <header>
         <div class="brand-title">
             <div class="status-dot"></div>
-            J.A.R.V.I.S. <span style="font-size: 0.75rem; color: var(--stark-red);">// MARK LIVE</span>
+            J.A.R.V.I.S. <span style="font-size: 0.75rem; color: var(--stark-red); font-weight: 800;">// MARK LIVE</span>
         </div>
 
         <div class="hud-controls">
             <input type="password" id="access-key" class="hud-input" placeholder="CLAVE DE ACCESO" autocomplete="off">
 
             <select id="model-select" class="hud-select">
-                <option value="flash">GEMINI 3.6 FLASH</option>
-                <option value="pro">GEMINI 3.6 PRO</option>
+                <option value="flash">⚡ MODELO: FLASH (RÁPIDO)</option>
+                <option value="pro">🧠 MODELO: PRO (DETALLADO)</option>
             </select>
 
             <button id="btn-bind-screen" class="btn-stream">🖥️ VINCULAR PANTALLA</button>
@@ -322,10 +364,11 @@
         <div class="chat-panel">
             <div id="status-log" class="msg-info">SISTEMA: DESCONECTADO // RECO TRADING</div>
             <div id="chat-messages" class="chat-messages">
-                <p style="color: #aaa; font-size: 0.9rem; margin-top: 10px; line-height: 1.5;">
+                <div class="msg msg-jarvis">
+                    <div class="msg-header">SYSTEM // ONLINE</div>
                     Sistemas en línea, Señor. Seleccione <strong>"Toda la pantalla"</strong> para sincronizar su gráfico (NinjaTrader, DeepCharts, etc.).<br><br>
                     Deje presionada la <strong>BARRA ESPACIADORA</strong> o el <strong>Reactor Arc</strong> de la derecha para transmitir su voz e imagen a JARVIS en vivo con ultra velocidad. El gráfico se actualizará continuamente mientras habla.
-                </p>
+                </div>
             </div>
         </div>
 
@@ -345,7 +388,7 @@
                     </svg>
                 </div>
                 <div id="arc-status" class="arc-status">PRESIONA O BARRA ESPACIADORA</div>
-                <button id="btn-cancel" class="btn-cancel">🛑 DETENER AUDIO</button>
+                <button id="btn-cancel" class="btn-cancel">🛑 CANCELAR AUDIO</button>
             </div>
         </div>
     </div>
@@ -361,6 +404,7 @@
         const arcStatus = document.getElementById('arc-status');
         const btnCancel = document.getElementById('btn-cancel');
         const statusLog = document.getElementById('status-log');
+        const chatMessages = document.getElementById('chat-messages');
         const captureCanvas = document.getElementById('capture-canvas');
 
         let ws = null;
@@ -372,6 +416,30 @@
         let spacePressed = false;
         let screenInterval = null;
         let nextPlayTime = 0;
+        let audioSources = []; // Colección para apagar de golpe voces anteriores y evitar encabalgamiento
+
+        // Configuración de reconocimiento de voz local para pintar el texto en pantalla de forma fluida
+        let recognition = null;
+        let spokenTranscript = "";
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = (event) => {
+                let accumulated = "";
+                for (let i = 0; i < event.results.length; i++) {
+                    accumulated += event.results[i][0].transcript + " ";
+                }
+                spokenTranscript = accumulated.trim();
+                if (spokenTranscript) {
+                    arcStatus.innerText = `🎙️ "${spokenTranscript.slice(-22)}..."`;
+                }
+            };
+        }
 
         // Cargar clave guardada
         accessKeyInput.value = localStorage.getItem('jarvis_key') || '';
@@ -404,13 +472,20 @@
             ws.onmessage = async (event) => {
                 const response = JSON.parse(event.data);
 
-                // Reproducir chunks de audio entrantes en tiempo real
+                // Si la API devuelve la transcripción de texto o el texto de respuesta del modelo, lo pintamos
                 if (response.serverContent && response.serverContent.modelTurn) {
                     const parts = response.serverContent.modelTurn.parts;
+                    let textReceived = "";
                     for (const part of parts) {
+                        if (part.text) {
+                            textReceived += part.text;
+                        }
                         if (part.inlineData && part.inlineData.mimeType.startsWith("audio/pcm")) {
                             playPCMChunk(part.inlineData.data);
                         }
+                    }
+                    if (textReceived) {
+                        addMessage('jarvis', textReceived);
                     }
                 }
             };
@@ -428,13 +503,13 @@
 
         connectWebSocket();
 
-        // Vincular Pantalla con optimizaciones de GPU
+        // Vincular Pantalla con optimizaciones de GPU y FPS para evitar la pantalla negra
         btnBindScreen.addEventListener('click', async () => {
             try {
                 screenStream = await navigator.mediaDevices.getDisplayMedia({
                     video: {
                         displaySurface: "monitor",
-                        frameRate: { max: 30, ideal: 15 },
+                        frameRate: { max: 30, ideal: 24 },
                         width: { max: 1920 },
                         height: { max: 1080 }
                     }
@@ -476,36 +551,57 @@
             audioProcessor.connect(audioCtx.destination);
         }
 
-        // Capturar fotograma de pantalla y enviarlo en vivo
+        // Capturar fotograma de pantalla directamente desde el elemento video de la GPU
         function sendScreenFrame() {
-            if (!screenPreview.videoWidth || !ws || ws.readyState !== WebSocket.OPEN) return;
+            if (screenPreview.videoWidth > 0 && screenPreview.videoHeight > 0) {
+                captureCanvas.width = screenPreview.videoWidth;
+                captureCanvas.height = screenPreview.videoHeight;
+                const ctx = captureCanvas.getContext('2d');
+                ctx.drawImage(screenPreview, 0, 0, captureCanvas.width, captureCanvas.height);
 
-            captureCanvas.width = screenPreview.videoWidth;
-            captureCanvas.height = screenPreview.videoHeight;
-            const ctx = captureCanvas.getContext('2d');
-            ctx.drawImage(screenPreview, 0, 0, captureCanvas.width, captureCanvas.height);
+                const base64Image = captureCanvas.toDataURL('image/jpeg', 0.65).split(',')[1];
 
-            const base64Image = captureCanvas.toDataURL('image/jpeg', 0.65).split(',')[1];
-
-            ws.send(JSON.stringify({
-                realtimeInput: {
-                    mediaChunks: [{ mimeType: "image/jpeg", data: base64Image }]
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        realtimeInput: {
+                            mediaChunks: [{ mimeType: "image/jpeg", data: base64Image }]
+                        }
+                    }));
                 }
-            }));
+            }
+        }
+
+        // Silenciar y abortar toda reproducción de audio en marcha
+        function mutePreviousAudio() {
+            audioSources.forEach(source => {
+                try {
+                    source.stop();
+                } catch(e){}
+            });
+            audioSources = [];
+            nextPlayTime = 0;
         }
 
         // Iniciar Sesión de Transmisión Táctica
         async function startSession() {
             if (isTransmitting) return;
             isTransmitting = true;
+
+            mutePreviousAudio(); // Apagar voces de JARVIS que sigan hablando
+            spokenTranscript = "";
+
             arcBtn.classList.add('active');
-            arcStatus.innerText = "TRANSMITIENDO PANTALLA & VOZ...";
+            arcStatus.innerText = "ESCUCHANDO...";
             arcStatus.style.color = "var(--cyan-core)";
+
+            if (recognition) {
+                try { recognition.start(); } catch(e){}
+            }
 
             await startAudioStream();
             sendScreenFrame(); // Frame inicial de inmediato
 
-            // Sincronización continua: envía el gráfico actualizado cada 2 segundos mientras hablas
+            // Sincronización continua: envía el gráfico de NinjaTrader actualizado cada 2 segundos mientras hablas
             screenInterval = setInterval(sendScreenFrame, 2000);
         }
 
@@ -514,8 +610,12 @@
             if (!isTransmitting) return;
             isTransmitting = false;
             arcBtn.classList.remove('active');
-            arcStatus.innerText = "PRESIONA O BARRA ESPACIADORA";
+            arcStatus.innerText = "PROCESANDO SUBASTA...";
             arcStatus.style.color = "var(--stark-gold)";
+
+            if (recognition) {
+                try { recognition.stop(); } catch(e){}
+            }
 
             if (mediaStream) {
                 mediaStream.getTracks().forEach(track => track.stop());
@@ -524,17 +624,30 @@
                 clearInterval(screenInterval);
                 screenInterval = null;
             }
+
+            if (spokenTranscript) {
+                addMessage('user', spokenTranscript);
+            }
+
+            // Avisamos al modelo que completamos nuestro turno de voz
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    clientContent: {
+                        turnComplete: true
+                    }
+                }));
+            }
         }
 
-        // Detener reproducción de voz actual de JARVIS
+        // Detener reproducción de voz actual de JARVIS (Mute completo)
         btnCancel.addEventListener('click', () => {
-            nextPlayTime = 0; // Resetear buffer de cola
-            arcStatus.innerText = "AUDIO MUTED";
+            mutePreviousAudio();
+            arcStatus.innerText = "AUDIO MUTED // CANCELADO";
             arcStatus.style.color = "var(--stark-red)";
             setTimeout(() => {
                 arcStatus.innerText = "PRESIONA O MANTÉN ESPACIO";
                 arcStatus.style.color = "var(--stark-gold)";
-            }, 1000);
+            }, 1200);
         });
 
         // Controles de Teclado (Barra Espaciadora)
@@ -581,7 +694,7 @@
             return window.btoa(binary);
         }
 
-        // Reproductor de PCM en el navegador
+        // Reproductor de PCM en el navegador con cola de reproducción fluida y limpia
         function playPCMChunk(base64Data) {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
 
@@ -603,11 +716,66 @@
             source.buffer = buffer;
             source.connect(audioCtx.destination);
 
+            // Registrar nodo de audio para poder detenerlo de golpe si el usuario cancela o interrumpe
+            audioSources.push(source);
+
             const currentTime = audioCtx.currentTime;
             if (nextPlayTime < currentTime) nextPlayTime = currentTime;
             source.start(nextPlayTime);
             nextPlayTime += buffer.duration;
+
+            // Limpieza del array de fuentes de audio activas una vez que terminan de sonar
+            source.onended = () => {
+                const index = audioSources.indexOf(source);
+                if (index > -1) {
+                    audioSources.splice(index, 1);
+                }
+            };
+        }
+
+        // Función para agregar mensajes de manera visual al Chat HUD
+        function addMessage(sender, text) {
+            // Si el último mensaje es del mismo autor y ocurrió hace menos de 3 segundos, lo anexamos para que no genere mil burbujas
+            const lastMsg = chatMessages.lastElementChild;
+            if (lastMsg && lastMsg.classList.contains(`msg-${sender}`)) {
+                const contentDiv = lastMsg.querySelector('.msg-content');
+                if (contentDiv) {
+                    contentDiv.innerText = text; // Actualizar texto dinámico en stream
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    return;
+                }
+            }
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg msg-${sender}`;
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'msg-header';
+            headerDiv.innerText = sender === 'user' ? 'OPERADOR' : 'J.A.R.V.I.S.';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'msg-content';
+            contentDiv.innerText = text;
+
+            msgDiv.appendChild(headerDiv);
+            msgDiv.appendChild(contentDiv);
+
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Al empezar a recibir texto, actualizamos la etiqueta del reactor
+            if (sender === 'jarvis') {
+                arcStatus.innerText = "RESPONDIENDO...";
+                arcStatus.style.color = "var(--cyan-core)";
+                setTimeout(() => {
+                    if(!isTransmitting) {
+                        arcStatus.innerText = "PRESIONA O BARRA ESPACIADORA";
+                        arcStatus.style.color = "var(--stark-gold)";
+                    }
+                }, 4000);
+            }
         }
     </script>
 </body>
 </html>
+Gemini Notebook can be inaccurate; please double check its responses.
