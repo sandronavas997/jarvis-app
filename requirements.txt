@@ -3,6 +3,4 @@ uvicorn
 websockets
 jinja2
 python-multipart
-edge-tts
-google-genai
 pydantic
