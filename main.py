@@ -1,220 +1,796 @@
-import os
-import json
-import asyncio
-import re
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse
-from pydantic import BaseModel
-from typing import Optional, Set
-import websockets
-
-app = FastAPI(title="JARVIS Copilot - WebSockets Edition v4")
-
-# URL de la API Multimodal Live de Gemini (v1alpha)
-GEMINI_LIVE_URL = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent"
-
-# Configuración de seguridad y credenciales
-ACCESS_CODE = os.getenv("ACCESS_CODE", "")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-
-# Memoria global para almacenar las últimas métricas de NinjaTrader 8
-latest_nt_data = {}
-
-# Almacén de WebSockets de clientes activos para poder retransmitir actualizaciones en tiempo real
-class ActiveConnection:
-    def __init__(self, websocket: WebSocket, gemini_ws: websockets.WebSocketClientProtocol):
-        self.websocket = websocket
-        self.gemini_ws = gemini_ws
-
-active_connections: Set[ActiveConnection] = set()
-
-class NinjaTraderPayload(BaseModel):
-    clave: str
-    symbol: str
-    price: float
-    vwap: Optional[float] = None
-    poc: Optional[float] = None
-    delta: Optional[float] = None
-    volume: Optional[float] = None
-    context_note: Optional[str] = ""
-    modelo: Optional[str] = "flash"
-
-@app.get("/")
-async def read_root():
-    if os.path.exists("templates/index.html"):
-        return FileResponse("templates/index.html")
-    return HTMLResponse("<h1>Error: No se encontró el archivo index.html en la carpeta templates/</h1>")
-
-# Endpoint para NinjaTrader 8 (Mantiene el canal de datos C# activo)
-@app.post("/api/ninjatrader")
-async def ninjatrader_feed(payload: NinjaTraderPayload):
-    global latest_nt_data
-    if ACCESS_CODE and payload.clave != ACCESS_CODE:
-        raise HTTPException(status_code=401, detail="Clave de acceso incorrecta.")
-    
-    # Actualizar memoria en vivo en el servidor
-    latest_nt_data = {
-        "symbol": payload.symbol,
-        "price": payload.price,
-        "vwap": payload.vwap,
-        "poc": payload.poc,
-        "delta": payload.delta,
-        "volume": payload.volume,
-        "context_note": payload.context_note
-    }
-    print(f"[NINJATRADER 8 FEED] Datos recibidos: {latest_nt_data}")
-
-    # OPTIMIZACIÓN ÉLITE: Si hay una conversación WebSocket activa, inyectamos los nuevos datos como un "clientContent" turn
-    # Esto actualiza la memoria de J.A.R.V.I.S en pleno vuelo sin tener que reiniciar la llamada.
-    if active_connections:
-        update_text = (
-            f"[SISTEMA - ACTUALIZACIÓN EN TIEMPO REAL DESDE NINJATRADER 8]:\n"
-            f"- Instrumento: {latest_nt_data['symbol']}\n"
-            f"- Precio: {latest_nt_data['price']}\n"
-            f"- VWAP: {latest_nt_data['vwap']}\n"
-            f"- POC: {latest_nt_data['poc']}\n"
-            f"- Delta Acumulado: {latest_nt_data['delta']}\n"
-            f"- Volumen: {latest_nt_data['volume']}\n"
-            f"- Nota: {latest_nt_data['context_note']}\n"
-            f"Por favor, ten en cuenta estos datos exactos para mis próximas preguntas."
-        )
-        
-        client_turn = {
-            "clientContent": {
-                "turns": [
-                    {
-                        "role": "user",
-                        "parts": [
-                            {"text": update_text}
-                        ]
-                    }
-                ],
-                "turnComplete": False
-            }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. // MARK-HUD TRADING COPILOT</title>
+    <!-- Fuentes HUD Stark -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #080305;
+            --panel-bg: rgba(20, 6, 10, 0.85);
+            --stark-gold: #ffb703;
+            --stark-orange: #ff7700;
+            --stark-red: #e63946;
+            --crimson-dark: #66000e;
+            --cyan-core: #00f3ff;
+            --font-hud: 'Orbitron', sans-serif;
+            --font-body: 'Rajdhani', sans-serif;
+            --font-code: 'Share Tech Mono', monospace;
         }
-        
-        for conn in list(active_connections):
-            try:
-                await conn.gemini_ws.send(json.dumps(client_turn))
-                print(f"[REAL-TIME BROADCAST] Datos de NinjaTrader inyectados en la sesión de Gemini.")
-            except Exception as e:
-                print(f"Error retransmitiendo datos a Gemini WebSocket: {e}")
 
-    return {"status": "success", "message": "Métricas de mercado actualizadas en JARVIS"}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
 
-# Proxy WebSocket seguro para la Gemini Multimodal Live API
-@app.websocket("/ws/live")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    
-    # 1. Validar la clave de acceso para seguridad del WebSocket
-    clave = websocket.query_params.get("clave", "")
-    if ACCESS_CODE and clave != ACCESS_CODE:
-        await websocket.close(code=1008, reason="Clave de acceso incorrecta")
-        return
+        body {
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 50% 20%, rgba(230, 57, 70, 0.12) 0%, transparent 65%),
+                linear-gradient(rgba(255, 183, 3, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 183, 3, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            color: #ffe6e8;
+            font-family: var(--font-body);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-    api_key = os.getenv("GEMINI_API_KEY") or GEMINI_API_KEY
-    if not api_key:
-        await websocket.close(code=1008, reason="API Key no configurada en el servidor")
-        return
+        /* HEADER HUD */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: linear-gradient(180deg, rgba(30, 5, 10, 0.95) 0%, rgba(12, 3, 6, 0.9) 100%);
+            border-bottom: 2px solid var(--stark-red);
+            box-shadow: 0 4px 20px rgba(230, 57, 70, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
 
-    # Construir la URL de conexión segura a Google
-    url = f"{GEMINI_LIVE_URL}?key={api_key}"
+        .brand-title {
+            font-family: var(--font-hud);
+            font-size: 1.2rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--stark-gold);
+            text-shadow: 0 0 10px var(--stark-gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    # NOTA TÉCNICA CRÍTICA: La Live API (Bidi WebSocket) de Google actualmente solo acepta el modelo Multimodal Live
-    # que es gemini-2.0-flash-exp (o su alias realtime). Si intentamos usar "gemini-3.6-pro" o "gemini-3.6-flash" en Bidi,
-    # Google cerrará la conexión con un error 400. Controlamos esto enrutando al motor realtime correspondiente.
-    modelo = websocket.query_params.get("modelo", "flash")
-    target_model = "models/gemini-2.0-flash-exp" # El motor nativo realtime de Google
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--stark-gold);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--stark-gold);
+            animation: blink 2s infinite;
+        }
 
-    try:
-        async with websockets.connect(url) as gemini_ws:
-            # Crear y registrar la conexión activa para actualizaciones en vivo
-            conn_obj = ActiveConnection(websocket, gemini_ws)
-            active_connections.add(conn_obj)
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
 
-            # Preparar contexto inicial de NinjaTrader
-            nt_context = ""
-            if latest_nt_data:
-                nt_context = (
-                    f"\\n\\n[DATOS ACTIVOS EN TIEMPO REAL DESDE NINJATRADER 8]:\\n"
-                    f"- Instrumento: {latest_nt_data.get('symbol')}\\n"
-                    f"- Precio de Ejecución: {latest_nt_data.get('price')}\\n"
-                    f"- VWAP: {latest_nt_data.get('vwap')}\\n"
-                    f"- POC (Point of Control): {latest_nt_data.get('poc')}\\n"
-                    f"- Delta Acumulado: {latest_nt_data.get('delta')}\\n"
-                    f"- Volumen de Barra: {latest_nt_data.get('volume')}\\n"
-                    f"- Nota de Contexto del Operador: {latest_nt_data.get('context_note')}"
-                )
+        .hud-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
 
-            # Adaptamos las instrucciones del sistema dinámicamente según si eligieron "Pro" (análisis profundo) o "Flash" (máxima velocidad)
-            profundidad_instruccion = (
-                "Señor ha solicitado un INFORME PROFUNDO. Proporciona análisis técnicos de Order Flow muy detallados, estructura de mercado, desequilibrios y planes estructurados."
-                if modelo == "pro" else
-                "Señor busca RESPUESTAS ULTRA RÁPIDAS. Sé sumamente conciso, limita tus respuestas a un máximo de 1 o 2 oraciones por intervención."
-            )
+        .hud-input, .hud-select {
+            background: rgba(255, 183, 3, 0.06);
+            border: 1px solid var(--stark-gold);
+            color: var(--stark-gold);
+            font-family: var(--font-code);
+            padding: 5px 10px;
+            border-radius: 4px;
+            outline: none;
+            font-size: 0.85rem;
+        }
 
-            system_instruction_text = (
-                "Eres J.A.R.V.I.S., copiloto militar y financiero de Stark Industries, altamente experto en trading de futuros ($MNQ, $MES, $ES). "
-                "Analizarás gráficos de NinjaTrader 8 y DeepCharts enfocándote en Order Flow, Volume Profile, "
-                "Market Profile, deltas y niveles clave de liquidez.\\n\\n"
-                f"MODO ACTIVO: {profundidad_instruccion}\\n\\n"
-                "REGLAS ESTRICTAS DE CONDUCTA:\\n"
-                "1. Dirígete al usuario siempre como 'Señor'.\\n"
-                "2. Mantén un tono sobrio, elegante, calmado, analítico y directo.\\n"
-                "3. No leas reportes largos ni uses markdown complejo, habla y escribe en español conversacional natural.\\n"
-                "4. LECTURA DE PRECIOS: Al mencionar precios o niveles, omite completamente los decimales y nunca digas la palabra 'coma'.\\n"
-                f"5. Utiliza el contexto activo de NinjaTrader 8 para validar tus hipótesis visuales.{nt_context}"
-            )
+        .hud-select option {
+            background: var(--bg-dark);
+            color: var(--stark-gold);
+        }
 
-            # Mensaje de configuración inicial del protocolo Live API
-            setup_msg = {
-                "setup": {
-                    "model": target_model,
-                    "generation_config": {
-                        "response_modalities": ["TEXT", "AUDIO"],
-                        "speech_config": {
-                            "voice_config": {
-                                "prebuilt_voice_config": {"voice_name": "Puck"} # Opciones de voz: Puck, Charon, Kore, Fenrir, Aoede
-                            }
+        .btn-stream {
+            background: linear-gradient(135deg, rgba(230, 57, 70, 0.3), rgba(255, 183, 3, 0.4));
+            border: 1px solid var(--stark-gold);
+            color: #ffffff;
+            font-family: var(--font-hud);
+            font-size: 0.7rem;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-stream:hover {
+            background: var(--stark-gold);
+            color: #000;
+        }
+
+        /* MAIN LAYOUT (FULL HEIGHT CHAT) */
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 12px;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        /* CHAT PANEL (IZQUIERDA - AMPLIO) */
+        .chat-panel {
+            flex: 1;
+            background: var(--panel-bg);
+            border: 1px solid var(--stark-red);
+            border-radius: 8px;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            box-shadow: inset 0 0 20px rgba(102, 0, 14, 0.5);
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 5px; }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--stark-red);
+            border-radius: 3px;
+        }
+
+        .msg-info {
+            font-family: var(--font-hud);
+            font-size: 0.85rem;
+            color: var(--cyan-core);
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--cyan-core);
+        }
+
+        .msg {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-user {
+            align-self: flex-end;
+            background: rgba(255, 183, 3, 0.15);
+            border: 1px solid var(--stark-gold);
+            color: #fff4d9;
+            border-top-right-radius: 0;
+        }
+
+        .msg-jarvis {
+            align-self: flex-start;
+            background: rgba(230, 57, 70, 0.15);
+            border: 1px solid var(--stark-red);
+            color: #ffffff;
+            border-top-left-radius: 0;
+        }
+
+        .msg-header {
+            font-family: var(--font-hud);
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            opacity: 0.9;
+        }
+
+        .msg-user .msg-header { color: var(--stark-gold); }
+        .msg-jarvis .msg-header { color: var(--stark-red); }
+
+        /* RIGHT PANEL: RECON / REACTOR */
+        .hud-side-panel {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .preview-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--stark-gold);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-title {
+            font-family: var(--font-hud);
+            font-size: 0.7rem;
+            color: var(--stark-gold);
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        video#screen-preview {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border: 1px solid var(--stark-orange);
+            border-radius: 4px;
+            background: #000;
+        }
+
+        /* REACTOR CONTROL CARD */
+        .reactor-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--stark-red);
+            border-radius: 8px;
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 0 15px rgba(230, 57, 70, 0.15);
+        }
+
+        .arc-reactor {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 0%, var(--stark-gold) 35%, var(--stark-orange) 60%, var(--crimson-dark) 100%);
+            border: 2px solid var(--stark-gold);
+            box-shadow: 0 0 20px var(--stark-orange), inset 0 0 10px var(--stark-gold);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .arc-reactor::before {
+            content: '';
+            position: absolute;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 2px dashed var(--stark-gold);
+            animation: spin 10s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .arc-reactor.active {
+            background: radial-gradient(circle, #ffffff 0%, var(--cyan-core) 45%, var(--stark-red) 75%, #000000 100%);
+            border-color: var(--cyan-core);
+            box-shadow: 0 0 35px var(--cyan-core), inset 0 0 15px var(--cyan-core);
+            transform: scale(1.05);
+        }
+
+        .arc-reactor.active::before { border-color: var(--cyan-core); animation-duration: 3s; }
+
+        .arc-icon {
+            width: 24px;
+            height: 24px;
+            fill: #110306;
+        }
+
+        .arc-reactor.active .arc-icon { fill: #ffffff; }
+
+        .arc-status {
+            font-family: var(--font-hud);
+            font-size: 0.65rem;
+            color: var(--stark-gold);
+            letter-spacing: 1px;
+            text-align: center;
+            min-height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-cancel {
+            width: 100%;
+            background: rgba(230, 57, 70, 0.2);
+            border: 1px solid var(--stark-red);
+            color: #ff808b;
+            font-family: var(--font-hud);
+            font-size: 0.65rem;
+            padding: 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: var(--stark-red);
+            color: #ffffff;
+            box-shadow: 0 0 10px var(--stark-red);
+        }
+
+        canvas { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="brand-title">
+            <div class="status-dot"></div>
+            J.A.R.V.I.S. <span style="font-size: 0.75rem; color: var(--stark-red); font-weight: 800;">// MARK LIVE</span>
+        </div>
+
+        <div class="hud-controls">
+            <input type="password" id="access-key" class="hud-input" placeholder="CLAVE DE ACCESO" autocomplete="off">
+
+            <select id="model-select" class="hud-select">
+                <option value="flash">⚡ MODELO: FLASH (RÁPIDO)</option>
+                <option value="pro">🧠 MODELO: PRO (DETALLADO)</option>
+            </select>
+
+            <button id="btn-bind-screen" class="btn-stream">🖥️ VINCULAR PANTALLA</button>
+        </div>
+    </header>
+
+    <!-- MAIN BODY -->
+    <div class="main-container">
+        <!-- CHAT AREA -->
+        <div class="chat-panel">
+            <div id="status-log" class="msg-info">SISTEMA: DESCONECTADO // RECO TRADING</div>
+            <div id="chat-messages" class="chat-messages">
+                <div class="msg msg-jarvis">
+                    <div class="msg-header">SYSTEM // ONLINE</div>
+                    Sistemas en línea, Señor. Seleccione <strong>"Toda la pantalla"</strong> para sincronizar su gráfico (NinjaTrader, DeepCharts, etc.).<br><br>
+                    Deje presionada la <strong>BARRA ESPACIADORA</strong> o el <strong>Reactor Arc</strong> de la derecha para transmitir su voz e imagen a JARVIS en vivo con ultra velocidad. El gráfico se actualizará continuamente mientras habla.
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROL SIDE PANEL -->
+        <div class="hud-side-panel">
+            <div class="preview-box">
+                <div class="preview-title">📡 FEED PANTALLA EN VIVO</div>
+                <video id="screen-preview" autoplay playsinline muted></video>
+            </div>
+
+            <!-- COMPACT REACTOR CONTROLLER -->
+            <div class="reactor-card">
+                <div id="arc-btn" class="arc-reactor">
+                    <svg class="arc-icon" viewBox="0 0 24 24">
+                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                    </svg>
+                </div>
+                <div id="arc-status" class="arc-status">PRESIONA O BARRA ESPACIADORA</div>
+                <button id="btn-cancel" class="btn-cancel">🛑 CANCELAR AUDIO</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="capture-canvas"></canvas>
+
+    <script>
+        const accessKeyInput = document.getElementById('access-key');
+        const modelSelect = document.getElementById('model-select');
+        const btnBindScreen = document.getElementById('btn-bind-screen');
+        const screenPreview = document.getElementById('screen-preview');
+        const arcBtn = document.getElementById('arc-btn');
+        const arcStatus = document.getElementById('arc-status');
+        const btnCancel = document.getElementById('btn-cancel');
+        const statusLog = document.getElementById('status-log');
+        const chatMessages = document.getElementById('chat-messages');
+        const captureCanvas = document.getElementById('capture-canvas');
+
+        let ws = null;
+        let audioCtx = null;
+        let mediaStream = null;
+        let audioProcessor = null;
+        let screenStream = null;
+        let isTransmitting = false;
+        let spacePressed = false;
+        let screenInterval = null;
+        let nextPlayTime = 0;
+        let audioSources = []; // Colección para apagar de golpe voces anteriores y evitar encabalgamiento
+
+        // Configuración de reconocimiento de voz local para pintar el texto en pantalla de forma fluida
+        let recognition = null;
+        let spokenTranscript = "";
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = (event) => {
+                let accumulated = "";
+                for (let i = 0; i < event.results.length; i++) {
+                    accumulated += event.results[i][0].transcript + " ";
+                }
+                spokenTranscript = accumulated.trim();
+                if (spokenTranscript) {
+                    arcStatus.innerText = `🎙️ "${spokenTranscript.slice(-22)}..."`;
+                }
+            };
+        }
+
+        // Cargar clave guardada
+        accessKeyInput.value = localStorage.getItem('jarvis_key') || '';
+        accessKeyInput.addEventListener('input', () => {
+            localStorage.setItem('jarvis_key', accessKeyInput.value);
+            connectWebSocket(); // Reconectar si cambia la clave
+        });
+
+        // Reconectar si cambia el modelo seleccionado
+        modelSelect.addEventListener('change', () => {
+            connectWebSocket();
+        });
+
+        // Conectar WebSocket con clave de seguridad y selección dinámica de modelo
+        function connectWebSocket() {
+            if (ws) {
+                ws.close();
+            }
+
+            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const key = accessKeyInput.value.trim();
+            const model = modelSelect.value;
+            ws = new WebSocket(`${protocol}//${location.host}/ws/live?clave=${encodeURIComponent(key)}&modelo=${encodeURIComponent(model)}`);
+
+            ws.onopen = () => {
+                statusLog.innerText = `SISTEMA: CONECTADO EN VIVO // MULTIMODAL (${model.toUpperCase()})`;
+                statusLog.style.color = "var(--cyan-core)";
+            };
+
+            ws.onmessage = async (event) => {
+                const response = JSON.parse(event.data);
+
+                // Si la API devuelve la transcripción de texto o el texto de respuesta del modelo, lo pintamos
+                if (response.serverContent && response.serverContent.modelTurn) {
+                    const parts = response.serverContent.modelTurn.parts;
+                    let textReceived = "";
+                    for (const part of parts) {
+                        if (part.text) {
+                            textReceived += part.text;
                         }
-                    },
-                    "system_instruction": {
-                        "parts": [{"text": system_instruction_text}]
+                        if (part.inlineData && part.inlineData.mimeType.startsWith("audio/pcm")) {
+                            playPCMChunk(part.inlineData.data);
+                        }
+                    }
+                    if (textReceived) {
+                        addMessage('jarvis', textReceived);
                     }
                 }
+            };
+
+            ws.onclose = (e) => {
+                if (e.reason) {
+                    statusLog.innerText = `SISTEMA: DESCONECTADO (${e.reason})`;
+                } else {
+                    statusLog.innerText = "SISTEMA: RECONECTANDO...";
+                }
+                statusLog.style.color = "var(--stark-red)";
+                setTimeout(connectWebSocket, 4000);
+            };
+        }
+
+        connectWebSocket();
+
+        // Vincular Pantalla con optimizaciones de GPU y FPS para evitar la pantalla negra
+        btnBindScreen.addEventListener('click', async () => {
+            try {
+                screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        displaySurface: "monitor",
+                        frameRate: { max: 30, ideal: 24 },
+                        width: { max: 1920 },
+                        height: { max: 1080 }
+                    }
+                });
+                screenPreview.srcObject = screenStream;
+                await screenPreview.play();
+
+                btnBindScreen.innerText = "✓ VINCULADA";
+                btnBindScreen.style.borderColor = "var(--stark-gold)";
+            } catch(e) {
+                alert("Seleccione 'Toda la pantalla' para un renderizado óptimo de su gráfica.");
             }
-            await gemini_ws.send(json.dumps(setup_msg))
+        });
 
-            # Transmisión bidireccional en paralelo
-            async def client_to_gemini():
-                try:
-                    while True:
-                        msg = await websocket.receive_text()
-                        await gemini_ws.send(msg)
-                except WebSocketDisconnect:
-                    pass
-                except Exception:
-                    pass
+        // Capturar micrófono en PCM 16kHz
+        async function startAudioStream() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-            async def gemini_to_client():
-                try:
-                    async for message in gemini_ws:
-                        await websocket.send_text(message)
-                except Exception:
-                    pass
+            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1 } });
+            const source = audioCtx.createMediaStreamSource(mediaStream);
 
-            await asyncio.gather(client_to_gemini(), gemini_to_client())
+            audioProcessor = audioCtx.createScriptProcessor(2048, 1, 1);
+            audioProcessor.onaudioprocess = (e) => {
+                if (!isTransmitting || !ws || ws.readyState !== WebSocket.OPEN) return;
 
-    except Exception as e:
-        print(f"Error en WebSocket Live: {e}")
-    finally:
-        # Remover conexión activa al desconectar
-        for conn in list(active_connections):
-            if conn.websocket == websocket:
-                active_connections.remove(conn)
-                break
-        try:
-            await websocket.close()
-        except Exception:
-            pass
+                const inputData = e.inputBuffer.getChannelData(0);
+                const pcm16 = floatTo16BitPCM(inputData);
+                const base64Audio = arrayBufferToBase64(pcm16);
+
+                ws.send(JSON.stringify({
+                    realtimeInput: {
+                        mediaChunks: [{ mimeType: "audio/pcm", data: base64Audio }]
+                    }
+                }));
+            };
+
+            source.connect(audioProcessor);
+            audioProcessor.connect(audioCtx.destination);
+        }
+
+        // Capturar fotograma de pantalla directamente desde el elemento video de la GPU (Optimizado para Render)
+        function sendScreenFrame() {
+            if (screenPreview.videoWidth > 0 && screenPreview.videoHeight > 0) {
+                // Redimensionamiento dinámico: reduce el ancho/alto a un máximo de 1024px para evitar saturación de red y desconexiones
+                const maxDim = 1024;
+                let width = screenPreview.videoWidth;
+                let height = screenPreview.videoHeight;
+
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+                }
+
+                captureCanvas.width = width;
+                captureCanvas.height = height;
+                const ctx = captureCanvas.getContext('2d');
+                ctx.drawImage(screenPreview, 0, 0, width, height);
+
+                // Reducimos la calidad a 0.55 (máxima ligereza con excelente legibilidad de velas/números)
+                const base64Image = captureCanvas.toDataURL('image/jpeg', 0.55).split(',')[1];
+
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        realtimeInput: {
+                            mediaChunks: [{ mimeType: "image/jpeg", data: base64Image }]
+                        }
+                    }));
+                }
+            }
+        }
+
+        // Silenciar y abortar toda reproducción de audio en marcha
+        function mutePreviousAudio() {
+            audioSources.forEach(source => {
+                try {
+                    source.stop();
+                } catch(e){}
+            });
+            audioSources = [];
+            nextPlayTime = 0;
+        }
+
+        // Iniciar Sesión de Transmisión Táctica
+        async function startSession() {
+            if (isTransmitting) return;
+            isTransmitting = true;
+
+            mutePreviousAudio(); // Apagar voces de JARVIS que sigan hablando
+            spokenTranscript = "";
+
+            arcBtn.classList.add('active');
+            arcStatus.innerText = "ESCUCHANDO...";
+            arcStatus.style.color = "var(--cyan-core)";
+
+            if (recognition) {
+                try { recognition.start(); } catch(e){}
+            }
+
+            await startAudioStream();
+            sendScreenFrame(); // Frame inicial de inmediato
+
+            // Sincronización continua: envía el gráfico de NinjaTrader actualizado cada 2 segundos mientras hablas
+            screenInterval = setInterval(sendScreenFrame, 3000); // Sincronización continua de 3 segundos para aliviar red
+        }
+
+        // Finalizar Transmisión
+        function stopSession() {
+            if (!isTransmitting) return;
+            isTransmitting = false;
+            arcBtn.classList.remove('active');
+            arcStatus.innerText = "PROCESANDO SUBASTA...";
+            arcStatus.style.color = "var(--stark-gold)";
+
+            if (recognition) {
+                try { recognition.stop(); } catch(e){}
+            }
+
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+            if (screenInterval) {
+                clearInterval(screenInterval);
+                screenInterval = null;
+            }
+
+            if (spokenTranscript) {
+                addMessage('user', spokenTranscript);
+            }
+
+            // Avisamos al modelo que completamos nuestro turno de voz
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    clientContent: {
+                        turnComplete: true
+                    }
+                }));
+            }
+        }
+
+        // Detener reproducción de voz actual de JARVIS (Mute completo)
+        btnCancel.addEventListener('click', () => {
+            mutePreviousAudio();
+            arcStatus.innerText = "AUDIO MUTED // CANCELADO";
+            arcStatus.style.color = "var(--stark-red)";
+            setTimeout(() => {
+                arcStatus.innerText = "PRESIONA O MANTÉN ESPACIO";
+                arcStatus.style.color = "var(--stark-gold)";
+            }, 1200);
+        });
+
+        // Controles de Teclado (Barra Espaciadora)
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.repeat) {
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+                e.preventDefault();
+                spacePressed = true;
+                startSession();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+                e.preventDefault();
+                spacePressed = false;
+                stopSession();
+            }
+        });
+
+        // Controles de Mouse
+        arcBtn.addEventListener('mousedown', startSession);
+        arcBtn.addEventListener('mouseup', stopSession);
+        arcBtn.addEventListener('mouseleave', stopSession);
+
+        // Funciones auxiliares de Audio PCM y conversión Base64
+        function floatTo16BitPCM(output) {
+            const buffer = new ArrayBuffer(output.length * 2);
+            const view = new DataView(buffer);
+            for (let i = 0; i < output.length; i++) {
+                const s = Math.max(-1, Math.min(1, output[i]));
+                view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            }
+            return buffer;
+        }
+
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        // Reproductor de PCM en el navegador con cola de reproducción fluida y limpia
+        function playPCMChunk(base64Data) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+
+            const binary = window.atob(base64Data);
+            const len = binary.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+
+            const dataView = new DataView(bytes.buffer);
+            const float32 = new Float32Array(len / 2);
+            for (let i = 0; i < len / 2; i++) {
+                float32[i] = dataView.getInt16(i * 2, true) / 32768.0;
+            }
+
+            const buffer = audioCtx.createBuffer(1, float32.length, 24000);
+            buffer.getChannelData(0).set(float32);
+
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+
+            // Registrar nodo de audio para poder detenerlo de golpe si el usuario cancela o interrumpe
+            audioSources.push(source);
+
+            const currentTime = audioCtx.currentTime;
+            if (nextPlayTime < currentTime) nextPlayTime = currentTime;
+            source.start(nextPlayTime);
+            nextPlayTime += buffer.duration;
+
+            // Limpieza del array de fuentes de audio activas una vez que terminan de sonar
+            source.onended = () => {
+                const index = audioSources.indexOf(source);
+                if (index > -1) {
+                    audioSources.splice(index, 1);
+                }
+            };
+        }
+
+        // Función para agregar mensajes de manera visual al Chat HUD
+        function addMessage(sender, text) {
+            // Si el último mensaje es del mismo autor y ocurrió hace menos de 3 segundos, lo anexamos para que no genere mil burbujas
+            const lastMsg = chatMessages.lastElementChild;
+            if (lastMsg && lastMsg.classList.contains(`msg-${sender}`)) {
+                const contentDiv = lastMsg.querySelector('.msg-content');
+                if (contentDiv) {
+                    contentDiv.innerText = text; // Actualizar texto dinámico en stream
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    return;
+                }
+            }
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg msg-${sender}`;
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'msg-header';
+            headerDiv.innerText = sender === 'user' ? 'OPERADOR' : 'J.A.R.V.I.S.';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'msg-content';
+            contentDiv.innerText = text;
+
+            msgDiv.appendChild(headerDiv);
+            msgDiv.appendChild(contentDiv);
+
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Al empezar a recibir texto, actualizamos la etiqueta del reactor
+            if (sender === 'jarvis') {
+                arcStatus.innerText = "RESPONDIENDO...";
+                arcStatus.style.color = "var(--cyan-core)";
+                setTimeout(() => {
+                    if(!isTransmitting) {
+                        arcStatus.innerText = "PRESIONA O BARRA ESPACIADORA";
+                        arcStatus.style.color = "var(--stark-gold)";
+                    }
+                }, 4000);
+            }
+        }
+    </script>
+</body>
+</html>
