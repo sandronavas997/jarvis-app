@@ -7,7 +7,7 @@
     <!-- Fuentes HUD Stark -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght=400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-dark: #080305;
@@ -89,7 +89,7 @@
             align-items: center;
         }
 
-        .hud-input {
+        .hud-input, .hud-select {
             background: rgba(255, 183, 3, 0.06);
             border: 1px solid var(--stark-gold);
             color: var(--stark-gold);
@@ -98,6 +98,11 @@
             border-radius: 4px;
             outline: none;
             font-size: 0.85rem;
+        }
+
+        .hud-select option {
+            background: var(--bg-dark);
+            color: var(--stark-gold);
         }
 
         .btn-stream {
@@ -301,6 +306,12 @@
 
         <div class="hud-controls">
             <input type="password" id="access-key" class="hud-input" placeholder="CLAVE DE ACCESO" autocomplete="off">
+
+            <select id="model-select" class="hud-select">
+                <option value="flash">GEMINI 3.6 FLASH</option>
+                <option value="pro">GEMINI 3.6 PRO</option>
+            </select>
+
             <button id="btn-bind-screen" class="btn-stream">🖥️ VINCULAR PANTALLA</button>
         </div>
     </header>
@@ -343,6 +354,7 @@
 
     <script>
         const accessKeyInput = document.getElementById('access-key');
+        const modelSelect = document.getElementById('model-select');
         const btnBindScreen = document.getElementById('btn-bind-screen');
         const screenPreview = document.getElementById('screen-preview');
         const arcBtn = document.getElementById('arc-btn');
@@ -368,7 +380,12 @@
             connectWebSocket(); // Reconectar si cambia la clave
         });
 
-        // Conectar WebSocket con clave de seguridad
+        // Reconectar si cambia el modelo seleccionado
+        modelSelect.addEventListener('change', () => {
+            connectWebSocket();
+        });
+
+        // Conectar WebSocket con clave de seguridad y selección dinámica de modelo
         function connectWebSocket() {
             if (ws) {
                 ws.close();
@@ -376,10 +393,11 @@
 
             const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
             const key = accessKeyInput.value.trim();
-            ws = new WebSocket(`${protocol}//${location.host}/ws/live?clave=${encodeURIComponent(key)}`);
+            const model = modelSelect.value;
+            ws = new WebSocket(`${protocol}//${location.host}/ws/live?clave=${encodeURIComponent(key)}&modelo=${encodeURIComponent(model)}`);
 
             ws.onopen = () => {
-                statusLog.innerText = "SISTEMA: CONECTADO EN VIVO // MULTIMODAL";
+                statusLog.innerText = `SISTEMA: CONECTADO EN VIVO // MULTIMODAL (${model.toUpperCase()})`;
                 statusLog.style.color = "var(--cyan-core)";
             };
 
@@ -425,7 +443,7 @@
                 await screenPreview.play();
 
                 btnBindScreen.innerText = "✓ VINCULADA";
-                btnScreen.style.borderColor = "var(--stark-gold)";
+                btnBindScreen.style.borderColor = "var(--stark-gold)";
             } catch(e) {
                 alert("Seleccione 'Toda la pantalla' para un renderizado óptimo de su gráfica.");
             }
@@ -496,7 +514,7 @@
             if (!isTransmitting) return;
             isTransmitting = false;
             arcBtn.classList.remove('active');
-            arcStatus.innerText = "PRESIONA O MANTÉN ESPACIO";
+            arcStatus.innerText = "PRESIONA O BARRA ESPACIADORA";
             arcStatus.style.color = "var(--stark-gold)";
 
             if (mediaStream) {
