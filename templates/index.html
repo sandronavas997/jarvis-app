@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J.A.R.V.I.S. // TACTICAL TRADING HUD</title>
+    <title>J.A.R.V.I.S. // LIVE MARK-HUD TRADING COPILOT</title>
     <!-- Fuentes HUD Stark -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -100,9 +100,9 @@
             font-size: 0.85rem;
         }
 
-        .hud-input:focus, .hud-select:focus {
-            border-color: var(--stark-orange);
-            box-shadow: 0 0 10px var(--stark-orange);
+        .hud-select option {
+            background: var(--bg-dark);
+            color: var(--stark-gold);
         }
 
         .btn-stream {
@@ -116,16 +116,14 @@
             cursor: pointer;
             letter-spacing: 1px;
             transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(255, 183, 3, 0.25);
         }
 
         .btn-stream:hover {
             background: var(--stark-gold);
             color: #000;
-            box-shadow: 0 0 20px var(--stark-gold);
         }
 
-        /* MAIN LAYOUT */
+        /* MAIN LAYOUT (FULL HEIGHT CHAT) */
         .main-container {
             display: flex;
             flex: 1;
@@ -146,17 +144,6 @@
             padding: 15px;
             box-shadow: inset 0 0 20px rgba(102, 0, 14, 0.5);
             overflow: hidden;
-            position: relative;
-        }
-
-        .msg-info {
-            font-family: var(--font-hud);
-            font-size: 0.85rem;
-            color: var(--cyan-core);
-            margin-bottom: 10px;
-            text-shadow: 0 0 5px var(--cyan-core);
-            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
-            padding-bottom: 6px;
         }
 
         .chat-messages {
@@ -175,12 +162,21 @@
             border-radius: 3px;
         }
 
+        .msg-info {
+            font-family: var(--font-hud);
+            font-size: 0.85rem;
+            color: var(--cyan-core);
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--cyan-core);
+        }
+
         .msg {
             max-width: 85%;
             padding: 10px 14px;
             border-radius: 6px;
             font-size: 0.95rem;
             line-height: 1.4;
+            margin-bottom: 10px;
             animation: fadeIn 0.25s ease-in-out;
         }
 
@@ -195,7 +191,6 @@
             border: 1px solid var(--stark-gold);
             color: #fff4d9;
             border-top-right-radius: 0;
-            box-shadow: 0 0 10px rgba(255, 183, 3, 0.1);
         }
 
         .msg-jarvis {
@@ -204,7 +199,6 @@
             border: 1px solid var(--stark-red);
             color: #ffffff;
             border-top-left-radius: 0;
-            box-shadow: 0 0 15px rgba(230, 57, 70, 0.15);
         }
 
         .msg-header {
@@ -218,75 +212,77 @@
         .msg-user .msg-header { color: var(--stark-gold); }
         .msg-jarvis .msg-header { color: var(--stark-red); }
 
-        /* CHAT INPUT BAR */
+        /* CHAT INPUT BAR (MARK-HUD STYLE) */
         .chat-input-bar {
             display: flex;
             gap: 8px;
             align-items: center;
-            background: rgba(4, 12, 24, 0.5);
-            border: 1px solid var(--stark-gold);
-            border-radius: 6px;
-            padding: 6px 12px;
-            box-shadow: 0 0 10px rgba(255, 183, 3, 0.15);
+            border-top: 1px solid rgba(230, 57, 70, 0.3);
+            padding-top: 12px;
         }
 
         .chat-text-input {
             flex: 1;
-            background: transparent;
-            border: none;
-            color: #ffffff;
+            background: rgba(20, 6, 10, 0.9);
+            border: 1px solid var(--stark-red);
+            color: #ffe6e8;
             font-family: var(--font-body);
-            font-size: 0.95rem;
+            padding: 8px 12px;
+            border-radius: 4px;
             outline: none;
-            padding: 6px 0;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
         }
 
-        .icon-label {
-            cursor: pointer;
+        .chat-text-input:focus {
+            border-color: var(--stark-gold);
+            box-shadow: 0 0 8px var(--stark-gold);
+        }
+
+        .btn-icon {
+            background: rgba(255, 183, 3, 0.1);
+            border: 1px solid var(--stark-gold);
             color: var(--stark-gold);
-            font-size: 1.2rem;
-            padding: 4px;
+            padding: 8px 12px;
             border-radius: 4px;
-            transition: 0.2s;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
             display: flex;
             align-items: center;
+            justify-content: center;
         }
 
-        .icon-label:hover {
-            background: rgba(255, 183, 3, 0.15);
-            text-shadow: 0 0 5px var(--stark-gold);
+        .btn-icon:hover {
+            background: var(--stark-gold);
+            color: #000;
         }
 
-        .chat-btn-submit {
-            background: linear-gradient(135deg, var(--stark-orange), var(--stark-red));
+        .btn-send {
+            background: linear-gradient(135deg, rgba(230, 57, 70, 0.4), rgba(255, 183, 3, 0.5));
             border: 1px solid var(--stark-gold);
             color: #ffffff;
             font-family: var(--font-hud);
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 800;
-            padding: 8px 14px;
+            padding: 8px 16px;
             border-radius: 4px;
             cursor: pointer;
-            outline: none;
-            transition: 0.2s;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
         }
 
-        .chat-btn-submit:hover {
-            box-shadow: 0 0 12px var(--stark-orange);
-            transform: scale(1.02);
+        .btn-send:hover {
+            background: var(--stark-gold);
+            color: #000;
         }
 
-        #image-preview-badge {
-            font-family: var(--font-code);
-            font-size: 0.75rem;
+        #image-preview {
+            font-size: 0.8rem;
             color: var(--stark-gold);
-            background: rgba(255, 183, 3, 0.15);
-            border: 1px solid var(--stark-gold);
-            border-radius: 4px;
-            padding: 2px 6px;
+            margin-top: 4px;
             display: none;
-            align-items: center;
-            gap: 4px;
+            font-family: var(--font-code);
         }
 
         /* RIGHT PANEL: RECON / REACTOR */
@@ -304,7 +300,6 @@
             padding: 10px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 15px rgba(255, 183, 3, 0.1);
         }
 
         .preview-title {
@@ -441,35 +436,28 @@
     <div class="main-container">
         <!-- CHAT AREA -->
         <div class="chat-panel">
-            <div id="status-log" class="msg-info">SISTEMA: INICIALIZANDO...</div>
-
+            <div id="status-log" class="msg-info">SISTEMA: DESCONECTADO // RECO TRADING</div>
             <div id="chat-messages" class="chat-messages">
                 <div class="msg msg-jarvis">
                     <div class="msg-header">SYSTEM // ONLINE</div>
                     Sistemas en línea, Señor. Seleccione <strong>"Toda la pantalla"</strong> para sincronizar su gráfico (NinjaTrader, DeepCharts, etc.).<br><br>
-                    Deje presionada la <strong>BARRA ESPACIADORA</strong> o el <strong>Reactor Arc</strong> de la derecha para transmitir su voz e imagen a JARVIS en vivo con ultra velocidad. El gráfico se actualizará continuamente mientras habla.<br><br>
-                    También puede <strong>escribir mensajes</strong> o <strong>cargar capturas manualmente (📷)</strong> utilizando la barra inferior si se encuentra fuera de su estación de trabajo.
+                    Deje presionada la <strong>BARRA ESPACIADORA</strong> o el <strong>Reactor Arc</strong> de la derecha para transmitir su voz e imagen a J.A.R.V.I.S. en vivo con ultra velocidad. El gráfico se actualizará continuamente mientras habla.<br><br>
+                    También puede <strong>escribir mensajes</strong> o <strong>cargar capturas manualmente (📷)</strong> utilizando el panel inferior si se encuentra fuera de su estación de trabajo.
                 </div>
             </div>
 
-            <!-- CHAT INPUT BAR RESTORED & OPTIMIZED -->
-            <form id="chatForm">
-                <div class="chat-input-bar">
-                    <!-- Icono Subir Captura -->
-                    <label for="image-file-input" class="icon-label" title="Subir Captura de Pantalla">📷</label>
-                    <input type="file" id="image-file-input" accept="image/*" style="display: none;">
+            <!-- CHAT INPUT FORM (HYBRID MANUAL CHAT RESTORED!) -->
+            <form id="chatForm" class="chat-input-bar">
+                <label class="btn-icon" title="Cargar Imagen Táctica">
+                    📷
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                </label>
 
-                    <!-- Badge de vista previa -->
-                    <span id="image-preview-badge">Imagen ✓ <span style="cursor:pointer;font-weight:bold;" onclick="clearImageInput(event)">×</span></span>
+                <input type="text" id="textInput" placeholder="Escribe a JARVIS o mantén barra espaciadora para hablar..." class="chat-text-input" autocomplete="off">
 
-                    <input type="text" id="text-input" class="chat-text-input" placeholder="Escribe a JARVIS o presiona hablar..." autocomplete="off">
-
-                    <!-- Botón Grabar Nota de Voz -->
-                    <button type="button" id="chat-mic-btn" class="icon-label" style="background:none;border:none;" title="Grabar mensaje de voz">🎙️</button>
-
-                    <button type="submit" class="chat-btn-submit">Enviar</button>
-                </div>
+                <button type="submit" class="btn-send">Enviar</button>
             </form>
+            <div id="image-preview"></div>
         </div>
 
         <!-- CONTROL SIDE PANEL -->
@@ -488,7 +476,7 @@
                     </svg>
                 </div>
                 <div id="arc-status" class="arc-status">PRESIONA O BARRA ESPACIADORA</div>
-                <button id="btn-cancel" class="btn-cancel">🛑 DETENER AUDIO</button>
+                <button id="btn-cancel" class="btn-cancel">🛑 CANCELAR AUDIO</button>
             </div>
         </div>
     </div>
@@ -505,11 +493,6 @@
         const btnCancel = document.getElementById('btn-cancel');
         const statusLog = document.getElementById('status-log');
         const chatMessages = document.getElementById('chat-messages');
-        const chatForm = document.getElementById('chatForm');
-        const textInput = document.getElementById('text-input');
-        const imageFileInput = document.getElementById('image-file-input');
-        const imagePreviewBadge = document.getElementById('image-preview-badge');
-        const chatMicBtn = document.getElementById('chat-mic-btn');
         const captureCanvas = document.getElementById('capture-canvas');
 
         let ws = null;
@@ -523,10 +506,28 @@
         let nextPlayTime = 0;
         let audioSources = []; // Colección para apagar de golpe voces anteriores y evitar encabalgamiento
 
-        // Grabador para notas de voz en el chat de texto
-        let chatRecorder = null;
-        let chatAudioChunks = [];
-        let isChatRecording = false;
+        // Configuración de reconocimiento de voz local para pintar el texto en pantalla de forma fluida
+        let recognition = null;
+        let spokenTranscript = "";
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = (event) => {
+                let accumulated = "";
+                for (let i = 0; i < event.results.length; i++) {
+                    accumulated += event.results[i][0].transcript + " ";
+                }
+                spokenTranscript = accumulated.trim();
+                if (spokenTranscript) {
+                    arcStatus.innerText = `🎙️ "${spokenTranscript.slice(-22)}..."`;
+                }
+            };
+        }
 
         // Cargar clave guardada
         accessKeyInput.value = localStorage.getItem('jarvis_key') || '';
@@ -559,14 +560,7 @@
             ws.onmessage = async (event) => {
                 const response = JSON.parse(event.data);
 
-                // Si el servidor nos envía un error de backend, lo mostramos claramente
-                if (response.error) {
-                    statusLog.innerText = `ERROR: ${response.error}`;
-                    statusLog.style.color = "var(--stark-red)";
-                    return;
-                }
-
-                // Reproducir chunks de audio de respuesta del modelo
+                // Si la API devuelve la transcripción de texto o el texto de respuesta del modelo, lo pintamos
                 if (response.serverContent && response.serverContent.modelTurn) {
                     const parts = response.serverContent.modelTurn.parts;
                     let textReceived = "";
@@ -597,7 +591,7 @@
 
         connectWebSocket();
 
-        // Vincular Pantalla con optimizaciones de GPU y canvas
+        // Vincular Pantalla con optimizaciones de GPU y FPS para evitar la pantalla negra
         btnBindScreen.addEventListener('click', async () => {
             try {
                 screenStream = await navigator.mediaDevices.getDisplayMedia({
@@ -618,7 +612,7 @@
             }
         });
 
-        // Capturar micrófono en PCM 16kHz para WebSockets
+        // Capturar micrófono en PCM 16kHz
         async function startAudioStream() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
             if (audioCtx.state === 'suspended') await audioCtx.resume();
@@ -645,73 +639,41 @@
             audioProcessor.connect(audioCtx.destination);
         }
 
-        // Capturar fotograma de pantalla y redimensionar dinámicamente para ahorrar ancho de banda
+        // Capturar fotograma de pantalla directamente desde el elemento video de la GPU (con compresión y redimensionado)
         function sendScreenFrame() {
-            if (!screenPreview.videoWidth || !ws || ws.readyState !== WebSocket.OPEN) return;
+            if (screenPreview.videoWidth > 0 && screenPreview.videoHeight > 0) {
+                // Redimensionado dinámico para no saturar ancho de banda (Max 1024px)
+                const maxDim = 1024;
+                let width = screenPreview.videoWidth;
+                let height = screenPreview.videoHeight;
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+                }
+                captureCanvas.width = width;
+                captureCanvas.height = height;
+                const ctx = captureCanvas.getContext('2d');
+                ctx.drawImage(screenPreview, 0, 0, width, height);
 
-            // Compresión dinámica: limitar el tamaño máximo de la imagen a enviar
-            const maxDim = 1024;
-            let width = screenPreview.videoWidth;
-            let height = screenPreview.videoHeight;
-            if (width > maxDim || height > maxDim) {
-                if (width > height) {
-                    height = Math.round((height * maxDim) / width);
-                    width = maxDim;
-                } else {
-                    width = Math.round((width * maxDim) / height);
-                    height = maxDim;
+                // Compresión JPEG a 0.55
+                const base64Image = captureCanvas.toDataURL('image/jpeg', 0.55).split(',')[1];
+
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        realtimeInput: {
+                            mediaChunks: [{ mimeType: "image/jpeg", data: base64Image }]
+                        }
+                    }));
                 }
             }
-
-            captureCanvas.width = width;
-            captureCanvas.height = height;
-            const ctx = captureCanvas.getContext('2d');
-            ctx.drawImage(screenPreview, 0, 0, width, height);
-
-            const base64Image = captureCanvas.toDataURL('image/jpeg', 0.55).split(',')[1];
-
-            ws.send(JSON.stringify({
-                realtimeInput: {
-                    mediaChunks: [{ mimeType: "image/jpeg", data: base64Image }]
-                }
-            }));
         }
 
-        // Iniciar Sesión de Transmisión Táctica
-        async function startSession() {
-            if (isTransmitting) return;
-            isTransmitting = true;
-            mutePreviousAudio(); // Apagar voces activas
-
-            arcBtn.classList.add('active');
-            arcStatus.innerText = "TRANSMITIENDO GRÁFICO & VOZ...";
-            arcStatus.style.color = "var(--cyan-core)";
-
-            await startAudioStream();
-            sendScreenFrame(); // Frame inicial de inmediato
-
-            // Sincronización continua: envía el gráfico de NinjaTrader actualizado cada 3 segundos
-            screenInterval = setInterval(sendScreenFrame, 3000);
-        }
-
-        // Finalizar Transmisión
-        function stopSession() {
-            if (!isTransmitting) return;
-            isTransmitting = false;
-            arcBtn.classList.remove('active');
-            arcStatus.innerText = "PRESIONA O BARRA ESPACIADORA";
-            arcStatus.style.color = "var(--stark-gold)";
-
-            if (mediaStream) {
-                mediaStream.getTracks().forEach(track => track.stop());
-            }
-            if (screenInterval) {
-                clearInterval(screenInterval);
-                screenInterval = null;
-            }
-        }
-
-        // Apagar de golpe todas las voces de JARVIS anteriores para evitar superposición
+        // Silenciar y abortar toda reproducción de audio en marcha
         function mutePreviousAudio() {
             audioSources.forEach(source => {
                 try {
@@ -722,14 +684,72 @@
             nextPlayTime = 0;
         }
 
+        // Iniciar Sesión de Transmisión Táctica
+        async function startSession() {
+            if (isTransmitting) return;
+            isTransmitting = true;
+
+            mutePreviousAudio(); // Apagar voces de JARVIS que sigan hablando
+            spokenTranscript = "";
+
+            arcBtn.classList.add('active');
+            arcStatus.innerText = "ESCUCHANDO...";
+            arcStatus.style.color = "var(--cyan-core)";
+
+            if (recognition) {
+                try { recognition.start(); } catch(e){}
+            }
+
+            await startAudioStream();
+            sendScreenFrame(); // Frame inicial de inmediato
+
+            // Envía la captura optimizada cada 3 segundos
+            screenInterval = setInterval(sendScreenFrame, 3000);
+        }
+
+        // Finalizar Transmisión
+        function stopSession() {
+            if (!isTransmitting) return;
+            isTransmitting = false;
+            arcBtn.classList.remove('active');
+            arcStatus.innerText = "PROCESANDO SUBASTA...";
+            arcStatus.style.color = "var(--stark-gold)";
+
+            if (recognition) {
+                try { recognition.stop(); } catch(e){}
+            }
+
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+            if (screenInterval) {
+                clearInterval(screenInterval);
+                screenInterval = null;
+            }
+
+            if (spokenTranscript) {
+                addMessage('user', spokenTranscript);
+            }
+
+            // Avisamos al modelo que completamos nuestro turno de voz
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    clientContent: {
+                        turnComplete: true
+                    }
+                }));
+            }
+        }
+
+        // Detener reproducción de voz actual de JARVIS (Mute completo)
         btnCancel.addEventListener('click', () => {
             mutePreviousAudio();
-            arcStatus.innerText = "AUDIO SILENCIADO";
+            arcStatus.innerText = "AUDIO MUTED // CANCELADO";
             arcStatus.style.color = "var(--stark-red)";
             setTimeout(() => {
-                arcStatus.innerText = "PRESIONA O BARRA ESPACIADORA";
+                arcStatus.innerText = "PRESIONA O MANTÉN ESPACIO";
                 arcStatus.style.color = "var(--stark-gold)";
-            }, 1000);
+            }, 1200);
         });
 
         // Controles de Teclado (Barra Espaciadora)
@@ -751,149 +771,86 @@
             }
         });
 
-        // Controles de Mouse en el Reactor
+        // Controles de Mouse
         arcBtn.addEventListener('mousedown', startSession);
         arcBtn.addEventListener('mouseup', stopSession);
         arcBtn.addEventListener('mouseleave', stopSession);
 
-        // FUNCIONES DE CHAT HÍBRIDO TRADICIONAL (FORMULARIO INFERIOR)
-        imageFileInput.addEventListener('change', () => {
-            if (imageFileInput.files[0]) {
-                imagePreviewBadge.style.display = 'flex';
+        // LÓGICA DE ENVÍO DE CHAT MANUAL / SUBIDA DE ARCHIVOS
+        function previewImage(input) {
+            const preview = document.getElementById('image-preview');
+            if (input.files && input.files[0]) {
+                preview.style.display = 'block';
+                preview.innerText = `📷 IMAGEN ADJUNTADA: "${input.files[0].name.slice(0, 20)}..."`;
             } else {
-                imagePreviewBadge.style.display = 'none';
+                preview.style.display = 'none';
             }
-        });
-
-        function clearImageInput(e) {
-            e.preventDefault();
-            imageFileInput.value = '';
-            imagePreviewBadge.style.display = 'none';
         }
 
-        // Grabar audio de forma asíncrona mediante el micrófono para el chat HTTP
-        chatMicBtn.addEventListener('click', async () => {
-            if (!isChatRecording) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    chatRecorder = new MediaRecorder(stream);
-                    chatAudioChunks = [];
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
 
-                    chatRecorder.ondataavailable = e => chatAudioChunks.push(e.data);
-                    chatRecorder.onstop = async () => {
-                        const audioBlob = new Blob(chatAudioChunks, { type: 'audio/wav' });
-                        const formData = new FormData();
-                        formData.append('clave', accessKeyInput.value);
-                        formData.append('audio_file', audioBlob, 'chat_voice.wav');
-                        formData.append('modelo', modelSelect.value);
-
-                        addMessage('user', '🎙️ [Nota de voz enviada]');
-                        await sendChatData(formData);
-                    };
-
-                    chatRecorder.start();
-                    isChatRecording = true;
-                    chatMicBtn.style.color = 'var(--stark-red)';
-                    chatMicBtn.style.textShadow = '0 0 10px var(--stark-red)';
-                    textInput.placeholder = "Escuchando... presione el botón de nuevo para detener.";
-                } catch(e) {
-                    alert("No se pudo acceder al micrófono para el chat manual.");
-                }
-            } else {
-                chatRecorder.stop();
-                isChatRecording = false;
-                chatMicBtn.style.color = 'var(--stark-gold)';
-                chatMicBtn.style.textShadow = 'none';
-                textInput.placeholder = "Escribe a JARVIS o presiona hablar...";
-            }
-        });
-
-        chatForm.addEventListener('submit', async (e) => {
+        document.getElementById('chatForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const text = textInput.value.trim();
-            const file = imageFileInput.files[0];
+            const input = document.getElementById('textInput');
+            const imgInput = document.getElementById('imageInput');
+            const text = input.value.trim();
 
-            if (!text && !file) return;
+            if (!text && !imgInput.files[0]) return;
 
-            const formData = new FormData();
-            formData.append('clave', accessKeyInput.value);
-            formData.append('modelo', modelSelect.value);
-
-            if (text) {
-                formData.append('mensaje_texto', text);
-                addMessage('user', text);
-            }
-            if (file) {
-                formData.append('image_file', file);
-                if (!text) addMessage('user', '📷 [Captura enviada]');
-            }
-
-            // Limpiar inputs de la UI
-            textInput.value = '';
-            imageFileInput.value = '';
-            imagePreviewBadge.style.display = 'none';
-
-            await sendChatData(formData);
-        });
-
-        async function sendChatData(formData) {
+            // Detener voz anterior
             mutePreviousAudio();
-            const statusIndicator = addMessage('jarvis', 'Calculando subasta, Señor...');
 
-            try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.status === 401) {
-                    statusIndicator.innerText = "Error: Clave de acceso incorrecta.";
-                    return;
-                }
-
-                const data = await response.json();
-                if (data.texto) {
-                    statusIndicator.innerText = data.texto;
-                    if (data.has_audio) {
-                        const audio = new Audio('/api/audio?t=' + new Date().getTime());
-                        // Almacenar el audio en nuestro array para poder cancelarlo si es necesario
-                        audioSources.push({
-                            stop: () => {
-                                audio.pause();
-                                audio.currentTime = 0;
-                            }
-                        });
-                        audio.play();
-                    }
-                } else {
-                    statusIndicator.innerText = "Error: J.A.R.V.I.S. no pudo responder.";
-                }
-            } catch(e) {
-                statusIndicator.innerText = "Error de conexión con el servidor.";
+            const parts = [];
+            if (text) {
+                parts.push({ text: text });
+                addMessage('user', text);
+            } else {
+                addMessage('user', '[Captura manual enviada]');
             }
-        }
 
-        // Agregar mensajes visuales al Chat HUD
-        function addMessage(sender, text) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `msg msg-${sender}`;
+            if (imgInput.files[0]) {
+                const file = imgInput.files[0];
+                try {
+                    const base64Data = await fileToBase64(file);
+                    parts.push({
+                        inlineData: {
+                            mimeType: file.type || "image/jpeg",
+                            data: base64Data.split(',')[1]
+                        }
+                    });
+                } catch(err) {
+                    console.error("Error al procesar archivo:", err);
+                }
+            }
 
-            const headerDiv = document.createElement('div');
-            headerDiv.className = 'msg-header';
-            headerDiv.innerText = sender === 'user' ? 'OPERADOR' : 'J.A.R.V.I.S.';
+            // Limpiar inputs
+            input.value = '';
+            imgInput.value = '';
+            document.getElementById('image-preview').style.display = 'none';
 
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'msg-content';
-            contentDiv.innerText = text;
-
-            msgDiv.appendChild(headerDiv);
-            msgDiv.appendChild(contentDiv);
-
-            chatMessages.appendChild(msgDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            return contentDiv; // Retornamos el contenedor del texto para poder actualizarlo (ej. cargando)
-        }
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    clientContent: {
+                        turns: [{
+                            role: "user",
+                            parts: parts
+                        }],
+                        turnComplete: true
+                    }
+                }));
+                arcStatus.innerText = "PROCESANDO SUBASTA...";
+                arcStatus.style.color = "var(--stark-gold)";
+            } else {
+                addMessage('jarvis', 'SISTEMA // ERROR: Conexión cerrada. Reconecte o recargue la página.');
+            }
+        });
 
         // Funciones auxiliares de Audio PCM y conversión Base64
         function floatTo16BitPCM(output) {
@@ -915,7 +872,7 @@
             return window.btoa(binary);
         }
 
-        // Reproductor de PCM en el navegador con cola de reproducción fluida
+        // Reproductor de PCM en el navegador con cola de reproducción fluida y limpia
         function playPCMChunk(base64Data) {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
 
@@ -937,12 +894,64 @@
             source.buffer = buffer;
             source.connect(audioCtx.destination);
 
-            audioSources.push(source); // Almacenar nodo activo
+            // Registrar nodo de audio para poder detenerlo de golpe si el usuario cancela o interrumpe
+            audioSources.push(source);
 
             const currentTime = audioCtx.currentTime;
             if (nextPlayTime < currentTime) nextPlayTime = currentTime;
             source.start(nextPlayTime);
             nextPlayTime += buffer.duration;
+
+            // Limpieza del array de fuentes de audio activas una vez que terminan de sonar
+            source.onended = () => {
+                const index = audioSources.indexOf(source);
+                if (index > -1) {
+                    audioSources.splice(index, 1);
+                }
+            };
+        }
+
+        // Función para agregar mensajes de manera visual al Chat HUD
+        function addMessage(sender, text) {
+            // Si el último mensaje es del mismo autor y ocurrió hace menos de 3 segundos, lo anexamos para que no genere mil burbujas
+            const lastMsg = chatMessages.lastElementChild;
+            if (lastMsg && lastMsg.classList.contains(`msg-${sender}`)) {
+                const contentDiv = lastMsg.querySelector('.msg-content');
+                if (contentDiv) {
+                    contentDiv.innerText = text; // Actualizar texto dinámico en stream
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    return;
+                }
+            }
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg msg-${sender}`;
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'msg-header';
+            headerDiv.innerText = sender === 'user' ? 'OPERADOR' : 'J.A.R.V.I.S.';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'msg-content';
+            contentDiv.innerText = text;
+
+            msgDiv.appendChild(headerDiv);
+            msgDiv.appendChild(contentDiv);
+
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Al empezar a recibir texto, actualizamos la etiqueta del reactor
+            if (sender === 'jarvis') {
+                arcStatus.innerText = "RESPONDIENDO...";
+                arcStatus.style.color = "var(--cyan-core)";
+                setTimeout(() => {
+                    if(!isTransmitting) {
+                        arcStatus.innerText = "PRESIONA O BARRA ESPACIADORA";
+                        arcStatus.style.color = "var(--stark-gold)";
+                    }
+                }, 4000);
+            }
         }
     </script>
 </body>
