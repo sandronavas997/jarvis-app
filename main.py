@@ -1,7 +1,7 @@
 import os
 import json
 import asyncio
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Form
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
 from typing import Optional
@@ -45,13 +45,13 @@ async def ninjatrader_feed(payload: NinjaTraderPayload):
     
     # Actualizar memoria en vivo en el servidor
     latest_nt_data = {
-        "symbol": payload.symbol,
-        "price": payload.price,
-        "vwap": payload.vwap,
-        "poc": payload.poc,
-        "delta": payload.delta,
-        "volume": payload.volume,
-        "context_note": payload.context_note
+        \"symbol\": payload.symbol,
+        \"price\": payload.price,
+        \"vwap\": payload.vwap,
+        \"poc\": payload.poc,
+        \"delta\": payload.delta,
+        \"volume\": payload.volume,
+        \"context_note\": payload.context_note
     }
     print(f"[NINJATRADER 8 FEED] Datos actualizados: {latest_nt_data}")
     return {"status": "success", "message": "Métricas de mercado actualizadas en JARVIS"}
@@ -67,6 +67,10 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.close(code=1008, reason="Clave de acceso incorrecta")
         return
 
+    # Determinar qué modelo utilizar (flash de manera predeterminada)
+    modelo = websocket.query_params.get("modelo", "flash")
+    target_model = "models/gemini-3.6-pro" if modelo == "pro" else "models/gemini-3.6-flash"
+
     api_key = os.getenv("GEMINI_API_KEY") or GEMINI_API_KEY
     if not api_key:
         await websocket.close(code=1008, reason="API Key no configurada en el servidor")
@@ -81,20 +85,20 @@ async def websocket_endpoint(websocket: WebSocket):
             nt_context = ""
             if latest_nt_data:
                 nt_context = (
-                    f"\n\n[DATOS ACTIVOS EN TIEMPO REAL DESDE NINJATRADER 8]:\n"
-                    f"- Instrumento: {latest_nt_data.get('symbol')}\n"
-                    f"- Precio de Ejecución: {latest_nt_data.get('price')}\n"
-                    f"- VWAP: {latest_nt_data.get('vwap')}\n"
-                    f"- POC (Point of Control): {latest_nt_data.get('poc')}\n"
-                    f"- Delta Acumulado: {latest_nt_data.get('delta')}\n"
-                    f"- Volumen de Barra: {latest_nt_data.get('volume')}\n"
+                    f"\\n\\n[DATOS ACTIVOS EN TIEMPO REAL DESDE NINJATRADER 8]:\\n"
+                    f"- Instrumento: {latest_nt_data.get('symbol')}\\n"
+                    f"- Precio de Ejecución: {latest_nt_data.get('price')}\\n"
+                    f"- VWAP: {latest_nt_data.get('vwap')}\\n"
+                    f"- POC (Point of Control): {latest_nt_data.get('poc')}\\n"
+                    f"- Delta Acumulado: {latest_nt_data.get('delta')}\\n"
+                    f"- Volumen de Barra: {latest_nt_data.get('volume')}\\n"
                     f"- Nota de Contexto del Operador: {latest_nt_data.get('context_note')}"
                 )
 
             # Mensaje de configuración inicial del protocolo Live API
             setup_msg = {
                 "setup": {
-                    "model": "models/gemini-2.0-flash-exp",
+                    "model": target_model,
                     "generation_config": {
                         "response_modalities": ["AUDIO"],
                         "speech_config": {
@@ -108,13 +112,13 @@ async def websocket_endpoint(websocket: WebSocket):
                             "text": (
                                 "Eres J.A.R.V.I.S., copiloto militar y financiero de Stark Industries, altamente experto en trading de futuros ($MNQ, $MES, $ES). "
                                 "Analizarás gráficos de NinjaTrader 8 y DeepCharts enfocándote en Order Flow, Volume Profile, "
-                                "Market Profile, deltas y niveles clave de liquidez.\n\n"
-                                "REGLAS STRICTAS DE CONDUCTA:\n"
-                                "1. Dirígete al usuario siempre como 'Señor'.\n"
-                                "2. Mantén un tono sobrio, elegante, calmado, analítico y directo.\n"
-                                "3. Tus respuestas deben ser cortas y ultra concisas (máximo 2 o 3 oraciones por voz) para agilizar decisiones de alta frecuencia.\n"
-                                "4. No leas reportes largos ni uses markdown o formato de texto, habla en español conversacional natural.\n"
-                                "5. LECTURA DE PRECIOS: Al mencionar precios o niveles, omite completamente los decimales y nunca digas la palabra 'coma'.\n"
+                                "Market Profile, deltas y niveles clave de liquidez.\\n\\n"
+                                "REGLAS STRICTAS DE CONDUCTA:\\n"
+                                "1. Dirígete al usuario siempre como 'Señor'.\\n"
+                                "2. Mantén un tono sobrio, elegante, calmado, analítico y directo.\\n"
+                                "3. Tus respuestas deben ser cortas y ultra concisas (máximo 2 o 3 oraciones por voz) para agilizar decisiones de alta frecuencia.\\n"
+                                "4. No leas reportes largos ni uses markdown o formato de texto, habla en español conversacional natural.\\n"
+                                "5. LECTURA DE PRECIOS: Al mencionar precios o niveles, omite completamente los decimales y nunca digas la palabra 'coma'.\\n"
                                 f"6. Utiliza el contexto activo de NinjaTrader 8 para validar tus hipótesis visuales.{nt_context}"
                             )
                         }]
