@@ -1,6 +1,5 @@
 fastapi
 uvicorn
+websockets
 jinja2
-google-genai
-edge-tts
 python-multipart
