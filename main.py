@@ -1,14 +1,13 @@
 import os
 import json
 import asyncio
-import re
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
 from typing import Optional, Set
 import websockets
 
-app = FastAPI(title="JARVIS Copilot - WebSockets Edition v4")
+app = FastAPI(title="JARVIS Copilot - WebSockets Edition v5")
 
 # URL de la API Multimodal Live de Gemini (v1alpha)
 GEMINI_LIVE_URL = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent"
