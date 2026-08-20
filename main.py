@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Optional, Set
 import websockets
 
-app = FastAPI(title="JARVIS Copilot - WebSockets Edition v5")
+app = FastAPI(title="JARVIS Copilot - WebSockets Edition v4")
 
 # URL de la API Multimodal Live de Gemini (v1alpha)
 GEMINI_LIVE_URL = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent"
@@ -64,7 +64,7 @@ async def ninjatrader_feed(payload: NinjaTraderPayload):
     }
     print(f"[NINJATRADER 8 FEED] Datos recibidos: {latest_nt_data}")
 
-    # Si hay una conversación WebSocket activa, inyectamos los nuevos datos como un "clientContent" turn
+    # OPTIMIZACIÓN ÉLITE: Si hay una conversación WebSocket activa, inyectamos los nuevos datos como un "clientContent" turn
     # Esto actualiza la memoria de J.A.R.V.I.S en pleno vuelo sin tener que reiniciar la llamada.
     if active_connections:
         update_text = (
